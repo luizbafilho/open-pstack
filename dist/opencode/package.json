@@ -5,7 +5,7 @@
   "main": "index.ts",
   "dependencies": {
     "@opencode/plugin": "2.0.23",
-    "yaml": "2.9.1"
+    "yaml": "2.9.0"
   },
   "pstack": {
     "upstreamSha": "2cbf58508f40de470d7490b55c51d71241928fa2"
