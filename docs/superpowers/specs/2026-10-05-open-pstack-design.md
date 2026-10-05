@@ -211,17 +211,17 @@ Branch protection on `main` requires this job.
 
 ### `sync.yml`
 
-Triggers: a weekly cron (`17 6 * * 1`, Mondays 06:17 UTC), `workflow_dispatch`, and pushes to `main` that change `rules/**`, `src/**` or `adapters/**`.
+Triggers: a weekly cron (`17 6 * * 1`, Mondays 06:17 UTC), `workflow_dispatch`, and pushes to `main` or `sync/upstream` that change `rules/**`, `src/**` or `adapters/**`.
 
 1. Get the newest upstream commit under `pstack/` with `gh api repos/cursor/plugins/commits?path=pstack&per_page=1`. Exit if its SHA equals `UPSTREAM.json.sha` and the run wasn't triggered by a push.
-2. Reset branch `sync/upstream` to `main`. Sparse-checkout `pstack/` at that SHA into `upstream/pstack/`, and write `UPSTREAM.json`.
+2. If `sync/upstream` already holds that SHA, check it out and merge `main` into it. Otherwise reset it to `main`, sparse-checkout `pstack/` at that SHA into `upstream/pstack/`, and write `UPSTREAM.json`.
 3. Run `bun run build`.
    - **Build passes.** If nothing changed relative to `main`, close any open sync PR and exit. Otherwise commit the snapshot and `dist/`, force-push, open or update the PR `sync: pstack <version> (<short sha>)`, remove the `sync-held` label, and enable squash auto-merge.
    - **Lint fails.** Commit only the snapshot, force-push, update the same PR with the findings in its body, add `sync-held`, and leave auto-merge off.
 
-A held sync clears when a normal PR adds or changes rules on `main`. That push reruns the sync, the build passes, and the PR auto-merges.
+A held sync clears when someone pushes rule fixes to the held PR's `sync/upstream` branch. That push reruns the sync on top of the branch instead of resetting it, the build passes, and the PR auto-merges. A rules PR against `main` can't clear it: its CI builds `main`'s older snapshot, where rules written for the new upstream text are dead.
 
-Only the workflow writes `sync/upstream`, so there's at most one open sync PR. It authenticates with a fine-grained PAT stored as the `SYNC_TOKEN` secret, with contents and pull-request write access on this repo. A PAT is needed because GitHub doesn't run workflows for PRs opened with `GITHUB_TOKEN`, and without them auto-merge never fires.
+Only the workflow and rule fixes for a held sync write `sync/upstream`, so there's at most one open sync PR. It authenticates with a fine-grained PAT stored as the `SYNC_TOKEN` secret, with contents and pull-request write access on this repo. A PAT is needed because GitHub doesn't run workflows for PRs opened with `GITHUB_TOKEN`, and without them auto-merge never fires.
 
 ### Renovate
 
