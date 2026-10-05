@@ -1,0 +1,93 @@
+name: sync
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["rules/**", "src/**", "adapters/**"]
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SYNC_TOKEN }}
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+
+      - name: Check upstream
+        id: check
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          latest=$(gh api 'repos/cursor/plugins/commits?path=pstack&per_page=1' --jq '.[0].sha')
+          current=$(jq -r .sha upstream/UPSTREAM.json)
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          if [ "$latest" = "$current" ] && [ "$EVENT" != "push" ]; then
+            echo "Snapshot is current at $current"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync
+        if: steps.check.outputs.skip != 'true'
+        env:
+          LATEST: ${{ steps.check.outputs.latest }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh label create sync-held --force --color d93f0b --description "Upstream sync waiting for rewrite rules"
+
+          git checkout -B sync/upstream origin/main
+          bun run fetch-upstream "$LATEST"
+          version=$(jq -r .version upstream/UPSTREAM.json)
+          title="sync: pstack $version (${LATEST:0:7})"
+          open=$(gh pr list --head sync/upstream --state open --json number --jq length)
+
+          set +e
+          bun run build --report findings.md
+          status=$?
+          set -e
+
+          if [ "$status" -eq 0 ]; then
+            git add upstream dist
+            if git diff --cached --quiet; then
+              if [ "$open" != "0" ]; then gh pr close sync/upstream --delete-branch; fi
+              exit 0
+            fi
+            git commit -m "$title"
+            git push -f origin sync/upstream
+            body="Upstream pstack $version at cursor/plugins@$LATEST. The rewrite lint passed."
+            if [ "$open" = "0" ]; then
+              gh pr create --head sync/upstream --base main --title "$title" --body "$body"
+            else
+              gh pr edit sync/upstream --title "$title" --body "$body"
+            fi
+            if gh pr view sync/upstream --json labels --jq '.labels[].name' | grep -qx sync-held; then
+              gh pr edit sync/upstream --remove-label sync-held
+            fi
+            gh pr merge sync/upstream --auto --squash
+          else
+            git add upstream
+            git commit -m "$title"
+            git push -f origin sync/upstream
+            body=$(printf 'Held: the rewrite lint found Cursor terms no rule covers.\n\n%s\n' "$(cat findings.md)")
+            if [ "$open" = "0" ]; then
+              gh pr create --head sync/upstream --base main --title "$title" --body "$body"
+            else
+              gh pr edit sync/upstream --title "$title" --body "$body"
+            fi
+            gh pr edit sync/upstream --add-label sync-held
+            gh pr merge sync/upstream --disable-auto || true
+          fi
