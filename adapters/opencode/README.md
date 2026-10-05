@@ -16,9 +16,12 @@ bun install --frozen-lockfile
 
 Add the directory to `plugins` in `~/.config/opencode/opencode.json`. Use the absolute path. OpenCode treats a path that starts with `~` as a package name and logs a warning on every start.
 
+pstack's playbooks also spawn subagents from inside subagents, and OpenCode allows one level by default. Raise `experimental.subagent_depth` to 3, the depth upstream's Orchestrate playbook uses:
+
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
+  "experimental": { "subagent_depth": 3 },
   "plugins": ["/home/you/.local/share/open-pstack/dist/opencode"]
 }
 ```

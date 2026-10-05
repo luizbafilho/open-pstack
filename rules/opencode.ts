@@ -99,7 +99,7 @@ const opencode: Rule[] = [
     files: "skills/poteto-mode/playbooks/orchestrate.md",
     match: "(nesting works to depth 3, and a nested spawn has the full Task schema including `environment`)",
     replace:
-      "(a nested spawn uses the same `subagent` tool. The built-in `general` agent can't spawn subagents, so run sub-coordinators as `poteto-agent`)",
+      "(nesting works to depth 3 when `experimental.subagent_depth` is 3, as open-pstack's README sets it. A nested spawn uses the same `subagent` tool. The built-in `general` agent can't spawn subagents, so run sub-coordinators as `poteto-agent`)",
   },
 
   // Cursor's Task tool: OpenCode's subagent tool.
