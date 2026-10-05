@@ -214,7 +214,7 @@ Branch protection on `main` requires this job.
 Triggers: a weekly cron (`17 6 * * 1`, Mondays 06:17 UTC), `workflow_dispatch`, and pushes to `main` or `sync/upstream` that change `rules/**`, `src/**` or `adapters/**`.
 
 1. Get the newest upstream commit under `pstack/` with `gh api repos/cursor/plugins/commits?path=pstack&per_page=1`. Exit if its SHA equals `UPSTREAM.json.sha` and the run wasn't triggered by a push.
-2. If `sync/upstream` already holds that SHA, check it out and merge `main` into it. Otherwise reset it to `main`, sparse-checkout `pstack/` at that SHA into `upstream/pstack/`, and write `UPSTREAM.json`.
+2. If `sync/upstream` already holds that SHA, or carries rule, build or adapter commits `main` lacks, check it out, merge `main` into it, and fetch that SHA on top. Otherwise reset it to `main`, sparse-checkout `pstack/` at that SHA into `upstream/pstack/`, and write `UPSTREAM.json`.
 3. Run `bun run build`.
    - **Build passes.** If nothing changed relative to `main`, close any open sync PR and exit. Otherwise commit the snapshot and `dist/`, force-push, open or update the PR `sync: pstack <version> (<short sha>)`, remove the `sync-held` label, and enable squash auto-merge.
    - **Lint fails.** Commit only the snapshot, force-push, update the same PR with the findings in its body, add `sync-held`, and leave auto-merge off.

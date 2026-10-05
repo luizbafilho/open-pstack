@@ -50,21 +50,10 @@ jobs:
           gh label create sync-held --force --color d93f0b --description "Upstream sync waiting for rewrite rules"
 
           # Rule fixes for a held sync are pushed to sync/upstream, where CI builds
-          # the new snapshot. Keep that branch while it already holds LATEST.
-          branch_sha=$(git show origin/sync/upstream:upstream/UPSTREAM.json 2>/dev/null | jq -r .sha || true)
-          if [ "$branch_sha" = "$LATEST" ]; then
-            base=sync
-            git checkout -B sync/upstream origin/sync/upstream
-            if ! git merge --no-edit origin/main; then
-              git checkout --ours dist
-              git add dist
-              git commit --no-edit
-            fi
-          else
-            base=main
-            git checkout -B sync/upstream origin/main
-            bun run fetch-upstream "$LATEST"
-          fi
+          # the new snapshot. The script keeps that branch when it has them.
+          .github/scripts/prepare-sync-branch.sh | tee prepare.log
+          test "${PIPESTATUS[0]}" -eq 0
+          base=$(tail -1 prepare.log | cut -d= -f2)
 
           version=$(jq -r .version upstream/UPSTREAM.json)
           title="sync: pstack $version (${LATEST:0:7})"
@@ -90,10 +79,10 @@ jobs:
                 if [ "$open" != "0" ]; then gh pr close sync/upstream --delete-branch; fi
                 exit 0
               fi
-            elif [ "$base" = "main" ]; then
-              git commit -m "$title"
-            else
+            elif git diff --cached --quiet -- upstream; then
               git commit -m "build: regenerate dist for $title"
+            else
+              git commit -m "$title"
             fi
             if [ "$base" = "main" ]; then git push -f origin sync/upstream; else git push origin sync/upstream; fi
             publish "Upstream pstack $version at cursor/plugins@$LATEST. The rewrite lint passed."
@@ -102,13 +91,9 @@ jobs:
             fi
             gh pr merge sync/upstream --auto --squash
           else
-            if [ "$base" = "main" ]; then
-              git add upstream
-              git commit -m "$title"
-              git push -f origin sync/upstream
-            else
-              git push origin sync/upstream
-            fi
+            git add upstream
+            git diff --cached --quiet || git commit -m "$title"
+            if [ "$base" = "main" ]; then git push -f origin sync/upstream; else git push origin sync/upstream; fi
             held="Held: the rewrite lint found Cursor terms no rule covers. Push rule fixes to the \`sync/upstream\` branch. The sync reruns on top of them."
             publish "$(printf '%s\n\n%s\n' "$held" "$(cat findings.md)")"
             gh pr edit sync/upstream --add-label sync-held
