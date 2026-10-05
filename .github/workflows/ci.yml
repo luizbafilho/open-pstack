@@ -8,8 +8,15 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      RENOVATE: ${{ startsWith(github.head_ref, 'renovate/') }}
     steps:
+      # Renovate bumps adapters/ but not dist/, so on its branches CI checks out
+      # the branch itself with a token that can push the rebuilt dist/ back.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RENOVATE == 'true' && github.head_ref || '' }}
+          token: ${{ env.RENOVATE == 'true' && secrets.SYNC_TOKEN || github.token }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.2
@@ -17,5 +24,19 @@ jobs:
       - run: bun run typecheck
       - run: bun test
       - run: bun run build
+      - name: Push the rebuilt dist/ to a Renovate branch
+        if: env.RENOVATE == 'true'
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if [ -n "$(git status --porcelain dist)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add dist
+            git commit -m "build: regenerate dist"
+            git push origin "HEAD:$BRANCH"
+            echo "Pushed the rebuilt dist/. CI reruns on the new head."
+            exit 1
+          fi
       - run: git diff --exit-code dist/
       - run: bun install --frozen-lockfile --cwd adapters/opencode
