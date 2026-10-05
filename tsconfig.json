@@ -6,7 +6,8 @@
     "moduleResolution": "bundler",
     "target": "ESNext",
     "types": ["bun"],
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": ["src", "rules", "test", "adapters"]
 }

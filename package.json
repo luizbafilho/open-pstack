@@ -12,6 +12,7 @@
     "yaml": "2.9.1"
   },
   "devDependencies": {
+    "@opencode/plugin": "2.0.23",
     "@types/bun": "1.4.2",
     "typescript": "7.0.2"
   }
