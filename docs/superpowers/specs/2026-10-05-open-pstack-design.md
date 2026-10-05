@@ -155,7 +155,7 @@ dist/opencode/
 - **Model rule.** A `context` session hook reads `~/.config/opencode/pstack-models.md` and pushes it onto `event.system`.
 - **Agents.** The plugin API can't add agents, so they ship as Markdown agent files:
   - `poteto-agent.md`: `mode: subagent`, body from upstream.
-  - `comment-sicko.md`: `mode: subagent`, with edit and shell permissions set to deny.
+  - `comment-sicko.md`: `mode: subagent`, body from upstream. It keeps edit and shell access, because `/no-comments` reviews the comments it deletes and the diff it produces.
   - `poteto.md`: `mode: primary`, generated from `poteto-mode`'s `mode: true` and `reminder`. The body tells the agent to apply the `poteto-mode` skill per its reminder. It stands in for Cursor's custom mode.
 
 ### Pi (`dist/pi/`)

@@ -22,20 +22,7 @@ export function convertAgents(files: FileMap, potetoMode: { reminder: string }):
   out.delete("agents/comment-sicko.md")
 
   out.set("agents/poteto-agent.md", agentFile({ description: poteto.description, mode: "subagent" }, poteto.body))
-  out.set(
-    "agents/comment-sicko.md",
-    agentFile(
-      {
-        description: sicko.description,
-        mode: "subagent",
-        permissions: [
-          { action: "edit", resource: "*", effect: "deny" },
-          { action: "shell", resource: "*", effect: "deny" },
-        ],
-      },
-      sicko.body,
-    ),
-  )
+  out.set("agents/comment-sicko.md", agentFile({ description: sicko.description, mode: "subagent" }, sicko.body))
   out.set(
     "agents/poteto.md",
     agentFile(
