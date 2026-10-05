@@ -121,7 +121,7 @@ Initial rule coverage:
 
 The lint runs on the generated output of every build and fails on any of:
 
-- **Leftover term.** A `rules/forbidden.ts` pattern matches in `dist/` text and no `rules/allow.ts` entry covers it. The initial patterns are case-sensitive: `\.cursor\b`, `\bCursor\b`, `cursor-team-kit`, `subagent_type`, `generalPurpose`, `AskQuestion`, `Task tool`, `\.mdc\b`, `api2\.cursor\.sh`, plus any model-slug-shaped token (`claude-*`, `gpt-*`, `grok-*`) missing from `rules/slugs.ts`, plus the name of every path in `rules/drop.ts` (`make-bot-ui`, `automations/`), so no output links to something we don't ship.
+- **Leftover term.** A `rules/forbidden.ts` pattern matches in `dist/` text and no `rules/allow.ts` entry covers it. The initial patterns are case-sensitive: `\.cursor\b`, `\bCursor\b`, `cursor-team-kit`, `subagent_type`, `generalPurpose`, `AskQuestion`, `Task tool`, `\.mdc\b`, `api2\.cursor\.sh`, plus any model-slug-shaped token (`claude-*`, `gpt-*`, `grok-*`) missing from `rules/slugs.ts`, plus the names of dropped content (`make-bot-ui`, `automations/benny`), so no output links to something we don't ship. These are listed explicitly rather than derived from `drop.ts`, because a derived `README.md` pattern would flag the guide's own `docs/guide/README.md` links.
 - **Dead rule.** A rule matched nothing in the current snapshot. This catches upstream rephrasing a sentence so a rule silently stops matching.
 - **Dead allow entry.** An `allow.ts` entry (file plus exact text) matched nothing.
 
@@ -238,6 +238,7 @@ The user's dotfiles own installation:
 - A mise bootstrap task:
   - clones the repo to `~/.local/share/open-pstack`
   - adds `dist/opencode` to `plugins` in the OpenCode config source
+  - runs `bun install --frozen-lockfile` in `dist/opencode`, which imports `@opencode/plugin` and `yaml`
   - symlinks `dist/opencode/agents/*.md` into `~/.config/opencode/agents/`
   - adds `dist/pi` to `packages` in the Pi settings source
   - runs `bun install --frozen-lockfile` in `dist/pi`
@@ -246,6 +247,10 @@ The user's dotfiles own installation:
 ## License
 
 Upstream is MIT, copyright Lauren Tan. Its `LICENSE` stays in `upstream/pstack/` and gets copied into each `dist/` target. This repo's own code is MIT under the top-level `LICENSE`.
+
+## Delivery order
+
+Two implementation plans. The OpenCode plan builds the shared pipeline, the OpenCode target, CI, sync and delivery, and runs with `opencode` as the only target. The Pi plan starts only after the OpenCode target works on the user's machine, and adds the `pi` target, `rules/pi.ts`, the Pi adapter, and `pi-subagents` to Renovate.
 
 ## Out of scope
 
