@@ -10,18 +10,6 @@ const common: Rule[] = [
     match: /^\| Build a page whose buttons wake a Grok Bot over a webhook \| \[`\/make-bot-ui`\]\(\.\.\/make-bot-ui\/SKILL\.md\) \|\n/gm,
     replace: "",
   },
-  {
-    id: "drop-make-bot-ui-guide-section",
-    files: "docs/guide/09-make-it-yours.md",
-    match: /^## Build a bot UI with `\/make-bot-ui`\n\n[^\n]*\n\n/gm,
-    replace: "",
-  },
-  {
-    id: "drop-benny-guide-paragraph",
-    files: "docs/guide/07-overnight.md",
-    match: /^pstack ships this as a dormant \[automation pack\]\(\.\.\/\.\.\/automations\/benny\/README\.md\)[^\n]*\n\n/gm,
-    replace: "",
-  },
 
   // cursor-team-kit skills: use them when installed, otherwise skip.
   {
@@ -325,41 +313,6 @@ const common: Rule[] = [
     files: "skills/poteto-help/SKILL.md",
     match: "Give each agent its own worktree, or run them as cloud agents, which each get their own machine.",
     replace: "Give each agent its own worktree.",
-  },
-  {
-    id: "cloud-guide-pitfall",
-    files: "docs/guide/10-recipes-and-pitfalls.md",
-    match: 'Run them as cloud agents, or say "own worktree per attempt".',
-    replace: 'Say "own worktree per attempt".',
-  },
-  {
-    id: "cloud-guide-isolation",
-    files: "docs/guide/02-poteto-mode.md",
-    match:
-      /The cleanest isolation is a \[cloud subagent\]\(https:\/\/cursor\.com\/docs\/subagents#cloud-subagents\)\.[^\n]*\n\nWhen the work has to stay local, ask for a worktree up front:/g,
-    replace: "The cleanest isolation is a git worktree per agent, plus its own ports when it runs the app. Ask for one up front:",
-  },
-  {
-    id: "cloud-guide-project",
-    files: "docs/guide/07-overnight.md",
-    match:
-      "A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, which run in the cloud by default, so the work continues when your laptop is closed.",
-    replace:
-      "One long-lived session gives a coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, each in its own worktree.",
-  },
-  {
-    id: "cloud-guide-project-habits",
-    files: "docs/guide/07-overnight.md",
-    match:
-      "- Give each body of work its own Project, such as a feature, a migration, a perf push, or a tech-debt cleanup. Several can run side by side.\n- Drag related chats into the Project, finished ones included. They become context for every agent in it.\n",
-    replace:
-      "- Give each body of work its own coordinator session, such as a feature, a migration, a perf push, or a tech-debt cleanup. Several can run side by side.\n- Point the coordinator at related sessions, finished ones included. `/recall` reads them as context.\n",
-  },
-  {
-    id: "cloud-guide-project-prompt",
-    files: "docs/guide/07-overnight.md",
-    match: "One prompt can carry a whole Project,",
-    replace: "One prompt can carry a whole coordinator session,",
   },
 
   // Cursor's built-in skills and restarts.
