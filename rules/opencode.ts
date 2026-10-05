@@ -368,6 +368,11 @@ const opencode: Rule[] = [
     match: /\ba Cursor restart\b/g,
     replace: "an OpenCode restart",
   },
+  {
+    id: "restart-verb",
+    match: /\brestart Cursor\b/g,
+    replace: "restart OpenCode",
+  },
 
   // poteto-help: install, custom mode, and positioning.
   {
