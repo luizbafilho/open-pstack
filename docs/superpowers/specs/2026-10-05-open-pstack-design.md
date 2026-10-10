@@ -4,15 +4,17 @@ Date: 2026-10-05
 
 ## Goal
 
-Run [pstack](https://github.com/cursor/plugins/tree/main/pstack) in OpenCode and Pi with behavior as close to Cursor's as the targets allow. Upstream changes reach both targets with no manual step. When upstream adds a Cursor term the rules can't handle, the sync stops and asks for a rule instead of shipping wrong text.
+Run [pstack](https://github.com/cursor/plugins/tree/main/pstack) in OpenCode and omp with behavior as close to Cursor's as the targets allow. Upstream changes reach both targets with no manual step. When upstream adds a Cursor term the rules can't handle, the sync stops and asks for a rule instead of shipping wrong text.
+
+The omp target replaced the Pi target this spec first planned. omp is a Pi fork, and its design lives in [2026-10-10-open-pstack-omp-design.md](./2026-10-10-open-pstack-omp-design.md). The sections below cover the shared pipeline and OpenCode.
 
 Audience: the author first. The layout and versioning must allow publishing to npm later, but nothing gets published now.
 
 ## Success criteria
 
-- A new upstream commit under `pstack/` ends up in `dist/opencode` and `dist/pi` on `main` within a week, with no human action, as long as the existing rules cover it.
+- A new upstream commit under `pstack/` ends up in `dist/opencode` and `dist/omp` on `main` within a week, with no human action, as long as the existing rules cover it.
 - A sync with uncovered Cursor terms never reaches `main`. It waits in a PR that lists every finding.
-- Every pstack skill can be invoked as `/<skill-id>` in both targets.
+- Every pstack skill can be invoked as `/<skill-id>` in OpenCode and as omp's native `/skill:<skill-id>` in omp.
 - Subagent-based skills (`arena`, `interrogate`, `swarm`, `how`, `why`, `reflect`, `poteto-mode` playbooks) launch subagents with the configured per-role models in both targets.
 
 ## Decisions
@@ -22,12 +24,11 @@ Audience: the author first. The layout and versioning must allow publishing to n
 | Porting method | Build-time rewrite of upstream text with typed rules. Upstream files are never edited by hand. |
 | Unmatched upstream text | Hold the sync and open a PR listing the lint findings. The last good build stays on `main`. |
 | Where output lives | The upstream snapshot and the generated `dist/` are both committed on `main`. |
-| Pi subagents | Depend on `pi-subagents`, pinned to an exact version. |
 | Model slugs | An explicit slug map per target. An unknown slug fails the lint. |
-| Model config file | `~/.config/opencode/pstack-models.md` (OpenCode), `~/.pi/agent/pstack-models.md` (Pi). |
+| Model config file | `~/.config/opencode/pstack-models.md` (OpenCode). omp uses the `~/.omp/agent/pstack.yml` overlay. |
 | Dropped from upstream | `skills/make-bot-ui`, `automations/`, `.cursor-plugin/`, `README.md`. |
 | `cursor-team-kit` references | Rewritten to "the X skill, if installed; otherwise skip". |
-| Transcript skills | Kept and mapped: Pi reads `~/.pi/agent/sessions/` JSONL, OpenCode reads session history through `opencode api`. |
+| Transcript skills | Kept and mapped: OpenCode reads session history through `opencode api`, and omp reads `~/.omp/agent/sessions/` JSONL. |
 | Tests | Only `test/lint.test.ts`. Everything else is covered by `tsc`, the lint on the real snapshot, and a stale-`dist/` check. |
 | Toolchain | Bun and TypeScript. |
 | Schedule | Weekly sync, plus a rerun on every push to `main` that changes rules, build code, or adapters. |
@@ -44,17 +45,18 @@ open-pstack/
     slugs.ts             # Cursor model slug -> provider/model, per target
     common.ts            # rewrites for both targets
     opencode.ts          # OpenCode-only rewrites
-    pi.ts                # Pi-only rewrites
+    omp.ts               # omp-only rewrites
+    roles.ts             # pstack role table that generates omp's task agents
     forbidden.ts         # patterns that must not appear in dist/
     allow.ts             # legitimate occurrences of forbidden patterns
   src/
     load.ts select.ts frontmatter.ts rewrite.ts agents.ts lint.ts emit.ts build.ts
   adapters/
     opencode/            # handwritten plugin code and README
-    pi/                  # handwritten extension, manifest template and README
+    omp/                 # manifest template, default overlay and README; no code
   dist/
     opencode/            # generated, committed
-    pi/                  # generated, committed
+    omp/                 # generated, committed
   test/
     lint.test.ts
   .github/workflows/
@@ -73,7 +75,7 @@ Machines write `upstream/` and `dist/`. People edit only `rules/`, `src/` and `a
 1. **Load.** Read `upstream/pstack` into `{ path, content }` entries. Binary files (images, `logo.png`) pass through unchanged.
 2. **Select.** Remove paths that match `rules/drop.ts`. `docs/guide/` stays and goes through the same rules, because `poteto-help` links to its pages.
 3. **Frontmatter.** Parse YAML frontmatter with the `yaml` package and map it per target:
-   - Set `name` to the skill directory name (`Poteto Mode` becomes `poteto-mode`), because Pi requires the two to match.
+   - Set `name` to the skill directory name (`Poteto Mode` becomes `poteto-mode`), because omp and the Agent Skills spec expect the two to match.
    - Keep `description` and `disable-model-invocation`. Both targets read the latter natively.
    - Remove `icon`, `color`, `mode`, `reminder` and `paths`. The OpenCode adapter consumes `mode` and `reminder` from `poteto-mode` before they're removed (see Adapters).
 4. **Rewrite.** Apply `rules/common.ts` and then the target's own rules, in order, to every text file (`.md`, `.sh`, `.ts`, `.mjs`, `.json`, `.tsv`).
@@ -96,26 +98,28 @@ Rules apply in file order, `common.ts` first. Specific phrases go before general
 
 Initial rule coverage:
 
-| Upstream (Cursor) | OpenCode | Pi |
-|---|---|---|
-| `Task` tool, "spawn with the Task tool" | `subagent` tool | `subagent` tool (pi-subagents) |
-| `subagent_type: generalPurpose` | `agent: "general"` | `agent: "worker"` |
-| `subagent_type: "poteto-agent"` | `agent: "poteto-agent"` | `agent: "poteto-agent"` |
-| `subagent_type: "Comment Sicko"` | `agent: "comment-sicko"` | `agent: "comment-sicko"` |
-| `run_in_background: true` | `background: true` | `async: true` |
-| `environment: "cloud"`, "Cursor cloud agent" | removed; a local subagent in its own worktree | same |
-| `readonly: true/false` | removed; read-only lanes use a read-only agent | same |
-| `AskQuestion` | `question` tool | numbered options asked in chat |
-| `~/.cursor/rules/pstack-models.mdc` | `~/.config/opencode/pstack-models.md` | `~/.pi/agent/pstack-models.md` |
-| `alwaysApply: true` rule wording in `setup-pstack` | "a file the pstack plugin loads into every session" | same |
-| `.cursor/skills/`, `~/.cursor/skills/` | `.opencode/skills/`, `~/.config/opencode/skills/` | `.pi/skills/`, `~/.pi/agent/skills/` |
-| `~/.cursor/projects/<slug>/agent-transcripts/` | session history read with `opencode api` | `~/.pi/agent/sessions/` JSONL |
-| Cursor's `/loop` | a background watcher subagent with a heartbeat | same |
-| Cursor's built-in `create-skill` | write `SKILL.md` to the Agent Skills spec | same |
-| `cursor-team-kit` skills (`deslop`, `control-ui`, `control-cli`) | "the X skill, if installed; otherwise skip" | same |
-| Cursor model slugs | from `rules/slugs.ts` | from `rules/slugs.ts` |
-| `poteto-help` table row linking `/make-bot-ui` | row removed | row removed |
-| transcript lookup in `poteto-mode/scripts/worktree-audit.sh` | file-scoped rule replacing the lookup with a query for the newest session per worktree through the OpenCode API (endpoint confirmed in the plan) | file-scoped rule pointing the lookup at `~/.pi/agent/sessions/` |
+| Upstream (Cursor) | OpenCode |
+|---|---|
+| `Task` tool, "spawn with the Task tool" | `subagent` tool |
+| `subagent_type: generalPurpose` | `agent: "general"` |
+| `subagent_type: "poteto-agent"` | `agent: "poteto-agent"` |
+| `subagent_type: "Comment Sicko"` | `agent: "comment-sicko"` |
+| `run_in_background: true` | `background: true` |
+| `environment: "cloud"`, "Cursor cloud agent" | removed; a local subagent in its own worktree |
+| `readonly: true/false` | removed; read-only lanes use a read-only agent |
+| `AskQuestion` | `question` tool |
+| `~/.cursor/rules/pstack-models.mdc` | `~/.config/opencode/pstack-models.md` |
+| `alwaysApply: true` rule wording in `setup-pstack` | "a file the pstack plugin loads into every session" |
+| `.cursor/skills/`, `~/.cursor/skills/` | `.opencode/skills/`, `~/.config/opencode/skills/` |
+| `~/.cursor/projects/<slug>/agent-transcripts/` | session history read with `opencode api` |
+| Cursor's `/loop` | a background watcher subagent with a heartbeat |
+| Cursor's built-in `create-skill` | write `SKILL.md` to the Agent Skills spec |
+| `cursor-team-kit` skills (`deslop`, `control-ui`, `control-cli`) | "the X skill, if installed; otherwise skip" |
+| Cursor model slugs | from `rules/slugs.ts` |
+| `poteto-help` table row linking `/make-bot-ui` | row removed |
+| transcript lookup in `poteto-mode/scripts/worktree-audit.sh` | file-scoped rule replacing the lookup with a query for the newest session per worktree through the OpenCode API (endpoint confirmed in the plan) |
+
+The omp column lives in the omp design.
 
 ### Lint
 
@@ -133,7 +137,7 @@ Each finding is `{ file, line, kind, pattern, text }`. CI prints one line per fi
 
 ## Adapters
 
-Both adapters do three things:
+The OpenCode adapter does three things. omp needs none of them as code, because it discovers skills and agents natively; see the omp design.
 
 1. Expose the skills.
 2. Register a `/<skill-id>` command for every skill, so upstream's `/poteto-mode`-style text stays correct with no rewrite rule.
@@ -158,42 +162,15 @@ dist/opencode/
   - `comment-sicko.md`: `mode: subagent`, body from upstream. It keeps edit and shell access, because `/no-comments` reviews the comments it deletes and the diff it produces.
   - `poteto.md`: `mode: primary`, generated from `poteto-mode`'s `mode: true` and `reminder`. The body tells the agent to apply the `poteto-mode` skill per its reminder. It stands in for Cursor's custom mode.
 
-### Pi (`dist/pi/`)
+### omp (`dist/omp/`)
 
-```
-dist/pi/
-  package.json            # pi manifest, version, pstack.upstreamSha, pi-subagents exact pin
-  extensions/pstack.ts    # from adapters/pi
-  skills/<id>/...
-  agents/poteto-agent.md  agents/comment-sicko.md
-  LICENSE  README.md
-```
-
-```json
-{
-  "keywords": ["pi-package"],
-  "dependencies": { "pi-subagents": "0.76.0" },
-  "peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
-  "pi": {
-    "skills": ["./skills"],
-    "extensions": ["./extensions/pstack.ts", "./node_modules/pi-subagents"],
-    "subagents": { "agents": ["./agents"] }
-  }
-}
-```
-
-- **Skills.** Pi loads them as-is and hides the `disable-model-invocation` ones from the model.
-- **Commands.** `pstack.ts` registers `/<skill-id>` aliases that run `/skill:<skill-id>` with the user's arguments.
-- **Model rule.** A `before_agent_start` handler appends `~/.pi/agent/pstack-models.md` to the system prompt.
-- **Agents.** Converted to `pi-subagents` frontmatter and loaded through `pi.subagents.agents`.
-- **No custom mode.** Users type `/poteto-mode` per task.
+See [the omp design](./2026-10-10-open-pstack-omp-design.md).
 
 ### Assumptions to verify first
 
-The implementation plan starts by checking these two. If either fails, work stops and the alternative goes back to the user.
+The implementation plan starts by checking this. If it fails, work stops and the alternative goes back to the user.
 
 1. An OpenCode plugin command executor can attach a skill by ID (`prompt.skills`) when it calls `ctx.session.prompt`.
-2. Pi loads an extension from `./node_modules/pi-subagents` in a local-path package after `bun install`.
 
 ## Automation
 
@@ -225,7 +202,7 @@ Only the workflow and rule fixes for a held sync write `sync/upstream`, so there
 
 ### Renovate
 
-`renovate.json` pins dependencies to exact versions and sets `automerge: true` for `pi-subagents` and `@opencode/plugin`. A bump merges only when `ci.yml` passes. A breaking change to the `pi-subagents` tool shape fails CI and waits for a human.
+`renovate.json` pins dependencies to exact versions and sets `automerge: true` for `@opencode/plugin`. A bump merges only when `ci.yml` passes. The omp target has no dependencies.
 
 ## Versioning
 
@@ -240,8 +217,7 @@ The user's dotfiles own installation:
   - adds `dist/opencode` to `plugins` in the OpenCode config source
   - runs `bun install --frozen-lockfile` in `dist/opencode`, which imports `@opencode/plugin` and `yaml`
   - symlinks `dist/opencode/agents/*.md` into `~/.config/opencode/agents/`
-  - adds `dist/pi` to `packages` in the Pi settings source
-  - runs `bun install --frozen-lockfile` in `dist/pi`
+  - installs the omp plugin from the marketplace and links its role overlay, per the omp design's dotfiles delivery
 - A systemd user timer runs Mondays at 09:00 local time. It runs `git pull --ff-only` and the same `bun install`. New sessions pick up the change. If OpenCode doesn't reload a path plugin on its own, the timer also runs `opencode service restart`. The plan checks which case applies.
 
 ## License
@@ -250,11 +226,11 @@ Upstream is MIT, copyright Lauren Tan. Its `LICENSE` stays in `upstream/pstack/`
 
 ## Delivery order
 
-Two implementation plans. The OpenCode plan builds the shared pipeline, the OpenCode target, CI, sync and delivery, and runs with `opencode` as the only target. The Pi plan starts only after the OpenCode target works on the user's machine, and adds the `pi` target, `rules/pi.ts`, the Pi adapter, and `pi-subagents` to Renovate.
+Two implementation plans. The OpenCode plan builds the shared pipeline, the OpenCode target, CI, sync and delivery, and runs with `opencode` as the only target. The omp plan starts only after the OpenCode target works on the user's machine, and adds the `omp` target described in the omp design.
 
 ## Out of scope
 
 - Publishing to npm.
 - Porting `cursor-team-kit` or any other Cursor plugin.
-- Cursor custom-mode behavior on Pi.
+- Cursor custom-mode behavior on omp.
 - Cloud execution. Every subagent runs locally.
