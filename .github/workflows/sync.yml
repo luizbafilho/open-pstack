@@ -73,7 +73,7 @@ jobs:
           }
 
           if [ "$status" -eq 0 ]; then
-            git add upstream dist
+            git add upstream dist .omp-plugin
             if git diff --cached --quiet; then
               if [ "$base" = "main" ]; then
                 if [ "$open" != "0" ]; then gh pr close sync/upstream --delete-branch; fi

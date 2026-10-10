@@ -1,0 +1,19 @@
+{
+  "name": "open-pstack",
+  "owner": {
+    "name": "luizbafilho"
+  },
+  "plugins": [
+    {
+      "name": "pstack",
+      "description": "pstack's skills and agents for omp",
+      "version": "0.15.13",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/luizbafilho/open-pstack.git",
+        "path": "dist/omp",
+        "ref": "main"
+      }
+    }
+  ]
+}

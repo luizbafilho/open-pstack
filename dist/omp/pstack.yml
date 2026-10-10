@@ -1,0 +1,7 @@
+# pstack model configuration. /skill:setup-pstack rewrites this file with one
+# modelRoles key per role; until then every pstack agent uses its default model.
+modelRoles: {}
+task:
+  maxRecursionDepth: 3
+  isolation:
+    enabled: true

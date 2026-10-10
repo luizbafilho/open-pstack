@@ -38,5 +38,5 @@ jobs:
             echo "Pushed the rebuilt dist/. CI reruns on the new head."
             exit 1
           fi
-      - run: git diff --exit-code dist/
+      - run: git diff --exit-code dist/ .omp-plugin/
       - run: bun install --frozen-lockfile --cwd adapters/opencode

@@ -1,4 +1,4 @@
-export type Target = "opencode"
+export type Target = "opencode" | "omp"
 export type FileContent = string | Uint8Array // string = UTF-8 text, Uint8Array = binary
 export type FileMap = Map<string, FileContent> // key: POSIX path relative to the tree root, sorted on emit
 export type Rule = {

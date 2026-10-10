@@ -1,4 +1,4 @@
-import type { Forbidden } from "../src/types"
+import type { Forbidden, Target } from "../src/types"
 
 const forbidden: Forbidden[] = [
   { id: "dot-cursor", pattern: /\.cursor\b/g },
@@ -13,6 +13,22 @@ const forbidden: Forbidden[] = [
   { id: "cursor-slug", pattern: /(?<![\w\/.-])(claude|gpt|grok)-[\w.-]*\d[\w.-]*/g },
   { id: "dropped-make-bot-ui", pattern: /make-bot-ui/g },
   { id: "dropped-benny", pattern: /automations\/benny/g },
+  { id: "cursor-url", pattern: /cursor\.com/g },
+  { id: "custom-mode", pattern: /Custom Mode/g },
+  { id: "run-in-background", pattern: /run_in_background/g },
+  { id: "cloud-environment", pattern: /environment: "/g },
 ]
+
+// Terms only one target must not ship, such as another target's tool names.
+export const targetForbidden: Record<Target, Forbidden[]> = {
+  opencode: [],
+  omp: [
+    { id: "opencode-models-file", pattern: /pstack-models/g },
+    { id: "opencode-subagent-tool", pattern: /`subagent` tool/g },
+    { id: "opencode-background", pattern: /`background: true`/g },
+    { id: "per-call-model", pattern: /`model`: |omit (?:Task )?`model`|Set `model`|subagent `model`/g },
+    { id: "readonly-flag", pattern: /`readonly`|readonly: (?:true|false)|[Rr]eadonly (?:judge|strips|mode\))/g },
+  ],
+}
 
 export default forbidden
