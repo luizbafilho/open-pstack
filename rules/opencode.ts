@@ -14,9 +14,17 @@ const opencode: Rule[] = [
     replace: "Substituting `general` skips that read and drifts.",
   },
   {
+    id: "agent-poteto-agent-lookup",
+    files: "agents/poteto-agent.md",
+    match:
+      "With no path, before any other work, search `~/.cursor/plugins/` for a file whose path ends in `skills/poteto-mode/SKILL.md`. If more than one file matches, use the copy whose `.cursor-plugin/plugin.json` has the highest `version`. Your skill catalog hides this skill, so a missing catalog entry does not mean pstack is absent. If no such file exists, stop and tell your parent.",
+    replace:
+      "With no path, before any other work, load the `poteto-mode` skill with the skill tool. Your skill catalog hides this skill, so a missing catalog entry does not mean pstack is absent. If the skill tool can't load it, stop and tell your parent.",
+  },
+  {
     id: "agent-comment-sicko-spawn",
     files: "skills/no-comments/SKILL.md",
-    match: 'Spawn `Task` with `subagent_type: "Comment Sicko"`.',
+    match: 'Spawn `Task` with `subagent_type: "comment-sicko"`.',
     replace: 'Call the `subagent` tool with `agent: "comment-sicko"`.',
   },
   {
@@ -31,44 +39,38 @@ const opencode: Rule[] = [
     replace: "set their own `agent`",
   },
   {
-    id: "agent-readonly-list",
-    match: /- `subagent_type`: `generalPurpose`\n(- `model`: [^\n]*\n)- `readonly`: `true`\n/g,
-    replace: "- `agent`: `explore`\n$1",
+    id: "agent-how-explore",
+    files: "skills/how/SKILL.md",
+    match: "Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonly: true`.",
+    replace: 'Every spawn is a subagent with `agent: "explore"`.',
   },
   {
-    id: "agent-why-investigators-mcp",
+    id: "agent-interrogate-explore",
+    files: "skills/interrogate/SKILL.md",
+    match: "Each reviewer gets `subagent_type: generalPurpose`, `readonly: true`, and `model`",
+    replace: 'Each reviewer gets `agent: "explore"` and `model`',
+  },
+  {
+    id: "agent-why-mcp",
     files: "skills/why/SKILL.md",
     match:
-      "- `readonly`: `false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables MCP-backed investigators entirely. Investigators still shouldn't write anything.",
-    replace: "- Investigators need MCP access, which `general` has. They still shouldn't write anything.",
-  },
-  {
-    id: "agent-why-synthesizer-mcp",
-    files: "skills/why/SKILL.md",
-    match:
-      "\n- `readonly`: `false` (agent mode). The synthesizer's quality check spot-verifies citations, which can require MCP access. Readonly/Ask mode strips MCPs and defeats that.",
-    replace: "",
-  },
-  {
-    id: "agent-general-list",
-    match: "- `subagent_type`: `generalPurpose`",
-    replace: "- `agent`: `general`",
+      "Every spawn is `generalPurpose` with `readonly: false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables the MCP-backed investigators and the synthesizer's citation spot-checks.",
+    replace:
+      'Every spawn uses `agent: "general"`, which has the MCP access the MCP-backed investigators and the synthesizer\'s citation spot-checks need.',
   },
   {
     id: "agent-reflect-reviewers-mcp",
     files: "skills/reflect/SKILL.md",
     match:
-      ", agent mode (`readonly: false`). Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript). Readonly strips MCPs.",
+      ", agent mode (`readonly: false`). Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references, and readonly strips MCPs.",
     replace:
-      ". Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript), and `general` has it.",
+      ". Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references, and `general` has it.",
   },
   {
     id: "agent-reflect-synthesizer-mcp",
     files: "skills/reflect/SKILL.md",
-    match:
-      ", agent mode (`readonly: false`). The synthesizer's quality check includes spot-verifying citations, which can require MCP access. Readonly strips MCPs.",
-    replace:
-      ". The synthesizer's quality check includes spot-verifying citations, which can require MCP access, and `general` has it.",
+    match: ", agent mode (`readonly: false`). It spot-verifies citations through MCP, and readonly strips MCPs.",
+    replace: ". It spot-verifies citations through MCP, which `general` has.",
   },
   {
     id: "agent-swarm-spawn",
@@ -91,8 +93,8 @@ const opencode: Rule[] = [
   },
   {
     id: "agent-model-families",
-    match: "Families go by prefix: `claude-*`, `gpt-*`, and `grok-*`",
-    replace: "Families go by model name after the provider: `claude-*`, `gpt-*`, and `grok-*`",
+    match: "Families go by prefix: `claude-*` and `grok-*`",
+    replace: "Families go by model name after the provider: `claude-*` and `grok-*`",
   },
   {
     id: "agent-orchestrate-nesting",
@@ -127,11 +129,6 @@ const opencode: Rule[] = [
     id: "task-omit-model",
     match: "omit Task `model`",
     replace: "omit the `subagent` tool's `model`",
-  },
-  {
-    id: "task-one-subagent",
-    match: /\bone Task subagent\b/g,
-    replace: "one subagent",
   },
   {
     id: "task-the-tool",
@@ -226,9 +223,9 @@ const opencode: Rule[] = [
     id: "skills-reflect-read-calls",
     files: "skills/reflect/references/*.md",
     match:
-      "- `Read` tool calls against any `SKILL.md` file (workspace `.cursor/skills/`, user-level `~/.cursor/skills/`, or plugin-installed paths under `~/.cursor/plugins/`)",
+      "a `Read` of its `SKILL.md` (under `.cursor/skills/`, `~/.cursor/skills/`, or `~/.cursor/plugins/`)",
     replace:
-      "- `skill` tool calls, and `read` tool calls against any `SKILL.md` file (workspace `.opencode/skills/`, user-level `~/.config/opencode/skills/`, or a plugin's directory)",
+      "a `skill` tool call loading it, a `read` of its `SKILL.md` (under `.opencode/skills/`, `~/.config/opencode/skills/`, or a plugin's directory)",
   },
   {
     id: "skills-user-dir",
@@ -269,16 +266,16 @@ const opencode: Rule[] = [
   {
     id: "transcripts-reflect-own",
     files: "skills/reflect/SKILL.md",
-    match: "The parent finds its own transcript file before fanning out.",
-    replace: "The parent finds its own session before fanning out. It is the newest session for this workspace.",
+    match: "Before fanning out, find this conversation's transcript in the `agent-transcripts/` directory the system prompt names.",
+    replace: `Before fanning out, find this conversation's session. It is the newest session for this workspace. List this workspace's sessions, newest first, with \`${listSessions}\`, and read one with \`${readSession}\`. ${redirectNote} Use only those sessions.`,
   },
   {
     id: "transcripts-reflect-candidates",
     files: "skills/reflect/SKILL.md",
     match:
-      /```bash\nls -t <agent-transcripts>[^\n]*\n```\n\nThree transcript layouts:[^\n]*\n\nFor each candidate, read the first JSONL line and check that `message\.content\[0\]\.text` contains the conversation's opening user prompt\. Take the matching path\. If no path resolves,/g,
+      /```bash\nls -t <agent-transcripts>[^\n]*\n```\n\nThat covers the legacy flat [^\n]*?For each candidate, read the first JSONL line\. Take the file whose `message\.content\[0\]\.text` contains the conversation's opening user prompt\. If none matches,/g,
     replace:
-      "For each candidate, read its first user message and check that it contains the conversation's opening user prompt. Take the matching session ID. If none matches,",
+      "For each candidate, read its first user message. Take the session whose first user message contains the conversation's opening user prompt. If none matches,",
   },
   {
     id: "transcripts-reflect-substitute",

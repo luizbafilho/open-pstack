@@ -1,9 +1,9 @@
 ---
 name: pstack-reflect-judgment
-description: "pstack's `reflect judgment, divergent, synthesizer` role. Model: modelRoles.pstack-reflect-judgment, default anthropic/claude-opus-5-5:max."
+description: "pstack's `reflect judgment, divergent, synthesizer` role. Model: modelRoles.pstack-reflect-judgment, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-reflect-judgment"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 ---
 # pstack worker
 

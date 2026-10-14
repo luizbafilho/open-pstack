@@ -1,9 +1,9 @@
 ---
 name: pstack-arena-runner-1
-description: "pstack's `arena runners` role. Model: modelRoles.pstack-arena-runner-1, default anthropic/claude-opus-5-5:max."
+description: "pstack's `arena runners` role. Model: modelRoles.pstack-arena-runner-1, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-arena-runner-1"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 ---
 # pstack worker
 

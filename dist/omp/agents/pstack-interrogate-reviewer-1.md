@@ -1,9 +1,9 @@
 ---
 name: pstack-interrogate-reviewer-1
-description: "pstack's `interrogate reviewers` role. Model: modelRoles.pstack-interrogate-reviewer-1, default anthropic/claude-opus-5-5:max."
+description: "pstack's `interrogate reviewers` role. Model: modelRoles.pstack-interrogate-reviewer-1, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-interrogate-reviewer-1"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 tools:
   - read
   - grep

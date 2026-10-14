@@ -1,9 +1,9 @@
 ---
 name: pstack-arena-judge-2
-description: "pstack's `arena cross-judge pool` role. Model: modelRoles.pstack-arena-judge-2, default openai-codex/gpt-5.6-sol:max."
+description: "pstack's `arena cross-judge pool` role. Model: modelRoles.pstack-arena-judge-2, default opencode-zen/grok-4.7:xhigh."
 model:
   - "@pstack-arena-judge-2"
-  - openai-codex/gpt-5.6-sol:max
+  - opencode-zen/grok-4.7:xhigh
 tools:
   - read
   - grep

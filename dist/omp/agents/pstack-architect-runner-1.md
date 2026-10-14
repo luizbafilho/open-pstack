@@ -1,9 +1,9 @@
 ---
 name: pstack-architect-runner-1
-description: "pstack's `architect runners` role. Model: modelRoles.pstack-architect-runner-1, default anthropic/claude-opus-5-5:max."
+description: "pstack's `architect runners` role. Model: modelRoles.pstack-architect-runner-1, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-architect-runner-1"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 ---
 # pstack worker
 

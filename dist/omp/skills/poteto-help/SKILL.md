@@ -27,6 +27,11 @@ Check the state that changes the answer, and mention it only when it does:
 - No `~/.omp/agent/pstack.yml` means `/skill:setup-pstack` hasn't run for this user, so every role uses its default model.
 - No `verify-*` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/skill:create-verification-skill` when the question is about proving a change works.
 
+When the model rule is missing and it matters, ask whether the user wants to pick a model for each role and a reasoning budget now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
+
+- Now: give them `/skill:setup-pstack` to type, and answer their question too.
+- Later: answer their question, and add one line saying every role keeps its default model until they run `/skill:setup-pstack`.
+
 ## Get set up
 
 1. Install with `omp plugin marketplace add luizbafilho/open-pstack` and `omp plugin install pstack@open-pstack`, as the [README](../../README.md) shows.
@@ -57,15 +62,17 @@ The default answer is `/skill:poteto-mode`, which runs most of the others when i
 | The user wants to | Skill |
 |---|---|
 | Do any non-trivial task with rigor | [`/skill:poteto-mode`](../poteto-mode/SKILL.md) |
+| Check that the agent understood their goal and the problem before it starts | [`/skill:in-your-own-words`](../in-your-own-words/SKILL.md) |
 | Know how code works now, or where new code should live | [`/skill:how`](../how/SKILL.md) |
 | Know why code is shaped this way, or where a number came from | [`/skill:why`](../why/SKILL.md) |
 | Understand a change or subsystem, explained plainly | [`/skill:teach`](../teach/SKILL.md) |
 | Catch up on their own recent work on a topic | [`/skill:recall`](../recall/SKILL.md) |
+| Catch up on what changed in this chat since their last message, in a few plain sentences and small visuals, with enough context to decide each action item | [`/skill:ketchup`](../ketchup/SKILL.md) |
 | Know what a small diff could break outside itself | [`/skill:blast-radius`](../blast-radius/SKILL.md) |
 | Settle types and module shape before code that crosses a function boundary | [`/skill:architect`](../architect/SKILL.md) |
 | Get several attempts at one brief, merged into the best one | [`/skill:arena`](../arena/SKILL.md) |
 | Run parallel checks over slices, or race workers, as subagents | [`/skill:swarm`](../swarm/SKILL.md) |
-| Have several models review a diff and try to break it | [`/skill:interrogate`](../interrogate/SKILL.md) |
+| Have different models review a diff and try to break it | [`/skill:interrogate`](../interrogate/SKILL.md) |
 | Fix a bug test-first when a cheap local test exists | [`/skill:tdd`](../tdd/SKILL.md) |
 | Apply TypeScript rules to `.ts` or `.tsx` work | [`/skill:typescript-best-practices`](../typescript-best-practices/SKILL.md) |
 | Strip comments before review, using a reviewer that didn't write them | [`/skill:no-comments`](../no-comments/SKILL.md) |
@@ -91,7 +98,7 @@ Close calls:
 - `/skill:arena` gives every worker the same brief and merges the best parts. `/skill:swarm` splits work into slices or a race and returns one report.
 - `/skill:architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
 - `/skill:interrogate` reviews the diff. `/skill:blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
-- `/skill:recall` rebuilds context across recent chats. Resuming one specific chat or branch is the Session pickup playbook.
+- `/skill:recall` rebuilds context across recent chats. `/skill:ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
 - `/skill:figure-it-out` designs one rigorous run. The Orchestrate playbook runs a program that spans days and many PRs. The Autonomous run playbook drives one task to a finish condition.
 
 Not in pstack:

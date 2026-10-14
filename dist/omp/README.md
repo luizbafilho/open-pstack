@@ -42,7 +42,7 @@ pstack spawns one task agent per role. Each agent's `model` list is `@pstack-<ro
 
 `poteto-agent` itself runs on the parent chat model, and `comment-sicko` serves `/skill:no-comments`.
 
-Run `/skill:setup-pstack` to choose the models. It lists your models with `omp models`, asks for a reasoning budget, and rewrites `~/.omp/agent/pstack.yml` with one key per role. A panel gets one key per seat, up to three. A role set to `inherit-parent` or `auto` is written as `"@default"` and runs on the parent chat model. omp re-reads the overlay before every spawn, so a change applies to the next subagent without a restart.
+Run `/skill:setup-pstack` to choose the models. It lists your models with `omp models`, asks for a reasoning budget, and rewrites `~/.omp/agent/pstack.yml` with one key per role. A panel gets one key per seat, up to two. A role set to `inherit-parent` or `auto` is written as `"@default"` and runs on the parent chat model. omp re-reads the overlay before every spawn, so a change applies to the next subagent without a restart.
 
 ## Always-on poteto-mode
 
