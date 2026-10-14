@@ -1,9 +1,9 @@
 ---
 name: pstack-how-explainer
-description: "pstack's `how explainer` role. Model: modelRoles.pstack-how-explainer, default anthropic/claude-opus-5-5:max."
+description: "pstack's `how explainer` role. Model: modelRoles.pstack-how-explainer, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-how-explainer"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 tools:
   - read
   - grep

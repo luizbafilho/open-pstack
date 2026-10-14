@@ -1,9 +1,9 @@
 ---
 name: pstack-arena-judge-1
-description: "pstack's `arena cross-judge pool` role. Model: modelRoles.pstack-arena-judge-1, default anthropic/claude-opus-5-5:max."
+description: "pstack's `arena cross-judge pool` role. Model: modelRoles.pstack-arena-judge-1, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-arena-judge-1"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 tools:
   - read
   - grep

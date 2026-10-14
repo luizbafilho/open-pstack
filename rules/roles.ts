@@ -8,10 +8,9 @@ export type Role = {
   defaults: string[] // upstream default slug; one per seat for a panel
 }
 
-const claude = "claude-opus-5-5-max"
-const gpt = "gpt-5.6-sol-max"
+const claude = "claude-opus-5-5-xhigh"
 const grok = "grok-4.7-xhigh-fast"
-const panel = [claude, gpt, grok]
+const panel = [claude, grok]
 
 const roles: Role[] = [
   { id: "feature", line: "feature, refactoring", base: "poteto", readonly: false, defaults: [grok] },
@@ -24,7 +23,7 @@ const roles: Role[] = [
   { id: "how-explainer", line: "how explainer", base: "worker", readonly: true, defaults: [claude] },
   { id: "why-investigator", line: "why investigators", base: "worker", readonly: false, defaults: [grok] },
   { id: "why-synthesizer", line: "why synthesizer", base: "worker", readonly: false, defaults: [claude] },
-  { id: "reflect-tooling", line: "reflect tooling", base: "worker", readonly: false, defaults: [gpt] },
+  { id: "reflect-tooling", line: "reflect tooling", base: "worker", readonly: false, defaults: [grok] },
   {
     id: "reflect-judgment",
     line: "reflect judgment, divergent, synthesizer",

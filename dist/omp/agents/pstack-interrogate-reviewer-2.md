@@ -1,9 +1,9 @@
 ---
 name: pstack-interrogate-reviewer-2
-description: "pstack's `interrogate reviewers` role. Model: modelRoles.pstack-interrogate-reviewer-2, default openai-codex/gpt-5.6-sol:max."
+description: "pstack's `interrogate reviewers` role. Model: modelRoles.pstack-interrogate-reviewer-2, default opencode-zen/grok-4.7:xhigh."
 model:
   - "@pstack-interrogate-reviewer-2"
-  - openai-codex/gpt-5.6-sol:max
+  - opencode-zen/grok-4.7:xhigh
 tools:
   - read
   - grep

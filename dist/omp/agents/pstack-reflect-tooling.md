@@ -1,9 +1,9 @@
 ---
 name: pstack-reflect-tooling
-description: "pstack's `reflect tooling` role. Model: modelRoles.pstack-reflect-tooling, default openai-codex/gpt-5.6-sol:max."
+description: "pstack's `reflect tooling` role. Model: modelRoles.pstack-reflect-tooling, default opencode-zen/grok-4.7:xhigh."
 model:
   - "@pstack-reflect-tooling"
-  - openai-codex/gpt-5.6-sol:max
+  - opencode-zen/grok-4.7:xhigh
 ---
 # pstack worker
 

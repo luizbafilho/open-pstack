@@ -1,9 +1,9 @@
 ---
 name: pstack-why-synthesizer
-description: "pstack's `why synthesizer` role. Model: modelRoles.pstack-why-synthesizer, default anthropic/claude-opus-5-5:max."
+description: "pstack's `why synthesizer` role. Model: modelRoles.pstack-why-synthesizer, default anthropic/claude-opus-5-5:xhigh."
 model:
   - "@pstack-why-synthesizer"
-  - anthropic/claude-opus-5-5:max
+  - anthropic/claude-opus-5-5:xhigh
 ---
 # pstack worker
 

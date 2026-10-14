@@ -18,7 +18,19 @@ const seatRange = (line: string): string => {
   return `\`${all[0]!.agent}\` to \`${all.at(-1)!.agent}\``
 }
 
+// Reviewer labels for a panel's seats: "A and B", or "A, B and C".
+const seatLabels = (line: string): string => {
+  const labels = seats(roleByLine(line)).map((_, i) => String.fromCharCode(65 + i))
+  return `${labels.slice(0, -1).join(", ")} and ${labels.at(-1)}`
+}
+
+const panelSeats = seats(roleByLine("arena runners")).length
+const panelMax = ["zero", "one", "two", "three", "four"][panelSeats]
+
 const seatPick = `Run the seats that have a \`modelRoles\` key in ${configFile}, or all of them when none has one.`
+
+// Matches a backticked default list: "`a` and `b`" or "`a`, `b`, and `c`".
+const defaultList = "(`[^`]+`(?:, `[^`]+`)*,? and `[^`]+`)"
 
 function setupShape(): string {
   const lines = roles.flatMap((role) => [
@@ -28,7 +40,7 @@ function setupShape(): string {
   return [
     "```yaml",
     "# pstack model configuration, written by /setup-pstack. Delete a key to fall back to that agent's default.",
-    "# budget: unlimited (max)",
+    "# budget: large (xhigh)",
     "modelRoles:",
     ...lines,
     "task:",
@@ -48,9 +60,26 @@ const omp: Rule[] = [
     replace: (_m, who: string) => `${who} a pstack agent. ${roleNote}`,
   },
   {
-    id: "role-list",
-    match: /- `subagent_type`: `generalPurpose`\n- `model`: the `([^`]+)` line, default `[^`]+`\n- `readonly`: [^\n]*\n/g,
-    replace: (_m, line: string) => `- \`agent\`: \`${agentFor(line)}\`\n`,
+    id: "role-how",
+    files: "skills/how/SKILL.md",
+    match:
+      /Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonly: true`\. Explorers use the `([^`]+)` line[^\n]*?every explainer uses the `([^`]+)` line[^\n]*?use the closest valid slug of the same family from its error message\./g,
+    replace: (_m, explorer: string, explainer: string) =>
+      `Explorers run as \`${agentFor(explorer)}\` and every explainer runs as \`${agentFor(explainer)}\`. Both agents are read-only. ${roleNote}`,
+  },
+  {
+    id: "role-why-mcp",
+    files: "skills/why/SKILL.md",
+    match:
+      "Every spawn is `generalPurpose` with `readonly: false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables the MCP-backed investigators and the synthesizer's citation spot-checks.",
+    replace:
+      "The pstack agents below have the MCP access the MCP-backed investigators and the synthesizer's citation spot-checks need.",
+  },
+  {
+    id: "role-model-line",
+    files: "skills/why/SKILL.md",
+    match: /`model`: the `([^`]+)` line, default `[^`]+`\./g,
+    replace: (_m, line: string) => `Use the \`${agentFor(line)}\` agent.`,
   },
   {
     id: "role-poteto-mode-defaults",
@@ -81,9 +110,9 @@ const omp: Rule[] = [
     id: "role-reflect-reviewers",
     files: "skills/reflect/SKILL.md",
     match:
-      "One message, three `Task` calls, `subagent_type: generalPurpose`, with `model` set as below, agent mode (`readonly: false`). Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript). Readonly strips MCPs.",
+      "One message, three `Task` calls, `subagent_type: generalPurpose`, agent mode (`readonly: false`). Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references, and readonly strips MCPs.",
     replace:
-      "One `task` call with three tasks, each on the agent below. Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript), and these agents have it.",
+      "One `task` call with three tasks, each on the agent below. Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references, and these agents have it.",
   },
   {
     id: "role-reflect-table-header",
@@ -101,16 +130,26 @@ const omp: Rule[] = [
     id: "role-reflect-synthesizer",
     files: "skills/reflect/SKILL.md",
     match:
-      "One `Task` call, `subagent_type: generalPurpose`, with `model` from the `reflect judgment, divergent, synthesizer` line (default `claude-opus-5-5-max`), agent mode (`readonly: false`). The synthesizer's quality check includes spot-verifying citations, which can require MCP access. Readonly strips MCPs.",
-    replace: `One \`task\` call on \`${agentFor("reflect judgment, divergent, synthesizer")}\`. The synthesizer's quality check includes spot-verifying citations, which can require MCP access, and that agent has it.`,
+      "One `Task` call, `subagent_type: generalPurpose`, `model` from the `reflect judgment, divergent, synthesizer` line (default `claude-opus-5-5-xhigh`), agent mode (`readonly: false`). It spot-verifies citations through MCP, and readonly strips MCPs.",
+    replace: `One \`task\` call on \`${agentFor("reflect judgment, divergent, synthesizer")}\`. It spot-verifies citations through MCP, which that agent has.`,
   },
   {
     id: "role-arena-runners",
     files: "skills/arena/SKILL.md",
-    match:
-      /Pick the runners\. Use the `arena runners` line in `~\/\.cursor\/rules\/pstack-models\.mdc`\. If the rule or that line is missing, default to one each on (`[^`]+`, `[^`]+`, `[^`]+`)\.[^\n]*?use the closest valid slug of the same family from its error message\./g,
+    match: new RegExp(
+      `Pick the runners\\. Use the \`arena runners\` line in \`~/\\.cursor/rules/pstack-models\\.mdc\`\\. If the rule or that line is missing, default to one each on ${defaultList}\\.[^\\n]*?use the closest valid slug of the same family from its error message\\.`,
+      "g",
+    ),
     replace: (_m, defaults: string) =>
       `Pick the runners: the ${seatRange("arena runners")} agents, whose defaults are ${defaults}. ${seatPick}`,
+  },
+  {
+    id: "role-arena-more-runners",
+    files: "skills/arena/SKILL.md",
+    match:
+      "Spawn more runners when the arena covers multiple design directions. Use the same model N times when the work is generation-bound rather than judgment-sensitive.",
+    replace:
+      "Run a seat more than once to cover more design directions, or when the work is generation-bound rather than judgment-sensitive.",
   },
   {
     id: "role-arena-fan-out",
@@ -121,16 +160,20 @@ const omp: Rule[] = [
   {
     id: "role-arena-judge",
     files: "skills/arena/SKILL.md",
-    match:
-      /choose one model from the `arena cross-judge pool` line in `~\/\.cursor\/rules\/pstack-models\.mdc`\. If the rule or that line is missing, choose from (`[^`]+`, `[^`]+`, `[^`]+`)\. Prefer a different model family from the parent's\. Spawn one readonly judge subagent on that model\./g,
+    match: new RegExp(
+      `choose one model from the \`arena cross-judge pool\` line in \`~/\\.cursor/rules/pstack-models\\.mdc\`\\. If the rule or that line is missing, choose from ${defaultList}\\. Prefer a different model family from the parent's\\. Spawn one readonly judge subagent on that model\\.`,
+      "g",
+    ),
     replace: (_m, defaults: string) =>
       `choose one of the ${seatRange("arena cross-judge pool")} agents. Their models are their \`modelRoles\` keys in ${configFile}, or ${defaults} when unset. Prefer one whose provider differs from the parent's. Spawn that one read-only judge.`,
   },
   {
     id: "role-architect-runners",
     files: "skills/architect/SKILL.md",
-    match:
-      /Take the runners from the `architect runners` line in the `pstack-models\.mdc` rule, in place of the `arena runners` line\. If the rule or that line is missing, use (`[^`]+`, `[^`]+`, `[^`]+`)\. Alias and rejected entries follow the runner rules in the \*\*arena\*\* skill's Phase A\./g,
+    match: new RegExp(
+      `Take the runners from the \`architect runners\` line in the \`pstack-models\\.mdc\` rule, in place of the \`arena runners\` line\\. If the rule or that line is missing, use ${defaultList}\\. Alias and rejected entries follow the runner rules in the \\*\\*arena\\*\\* skill's Phase A\\.`,
+      "g",
+    ),
     replace: (_m, defaults: string) =>
       `Run the ${seatRange("architect runners")} agents in place of the arena runners, picking seats as the **arena** skill's Phase A does. Their defaults are ${defaults}.`,
   },
@@ -138,20 +181,20 @@ const omp: Rule[] = [
     id: "role-interrogate-launch",
     files: "skills/interrogate/SKILL.md",
     match:
-      "Launch all reviewers in a single message using the Task tool. Use the `interrogate reviewers` line in `~/.cursor/rules/pstack-models.mdc`, one reviewer per entry, extending or shrinking the Reviewer A/B/C labels below to the configured entry count. If the rule or that line is missing, use the table defaults.",
-    replace: `Launch all reviewers in one \`task\` call. Reviewers A, B and C run as ${seatRange("interrogate reviewers")}. ${seatPick} The table lists each seat's default model.`,
+      "Launch all reviewers in a single message with the Task tool, one per entry on the `interrogate reviewers` line in `~/.cursor/rules/pstack-models.mdc`, labeled Reviewer A, B, and so on to match the entry count. If the rule or that line is missing, use the table defaults.",
+    replace: `Launch all reviewers in one \`task\` call. Reviewers ${seatLabels("interrogate reviewers")} run as ${seatRange("interrogate reviewers")}. ${seatPick} The table lists each seat's default model.`,
   },
   {
     id: "role-interrogate-list",
     files: "skills/interrogate/SKILL.md",
     match:
-      "- `subagent_type`: `generalPurpose`\n- `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. For an `auto` or `inherit-parent` entry, omit `model` so that reviewer runs on the parent model.\n- `readonly`: `true`\n",
-    replace: "- `agent`: that reviewer's seat agent\n",
+      "Each reviewer gets `subagent_type: generalPurpose`, `readonly: true`, and `model` set to its configured entry, or its table default when there is no configured line. Omit `model` for an `auto` or `inherit-parent` entry, so that reviewer runs on the parent model.",
+    replace: "Each reviewer runs on its seat agent, which is read-only.",
   },
   {
     id: "role-interrogate-rejected",
     files: "skills/interrogate/SKILL.md",
-    match: /If the Task tool rejects a configured entry, run that reviewer on the table default of its family and say so\.[^\n]*Never treat an alias entry as a rejected slug or apply either fallback to it\./g,
+    match: /If the Task tool rejects a configured entry, run that reviewer on its family's table default and say so\.[^\n]*Never treat an alias entry as a rejected slug or apply either fallback to it\./g,
     replace: "Do not block the review on a model problem. Report it and run the remaining seats.",
   },
   {
@@ -185,7 +228,7 @@ const omp: Rule[] = [
   {
     id: "agent-comment-sicko-spawn",
     files: "skills/no-comments/SKILL.md",
-    match: 'Spawn `Task` with `subagent_type: "Comment Sicko"`.',
+    match: 'Spawn `Task` with `subagent_type: "comment-sicko"`.',
     replace: 'Call the `task` tool with `agent: "comment-sicko"`.',
   },
   {
@@ -201,11 +244,6 @@ const omp: Rule[] = [
   },
 
   // Cursor's Task tool: omp's task tool.
-  {
-    id: "task-one-subagent",
-    match: /\bone Task subagent\b/g,
-    replace: "one subagent",
-  },
   {
     id: "task-the-tool",
     match: /\bthe Task tool\b/g,
@@ -290,7 +328,7 @@ const omp: Rule[] = [
     id: "setup-panel-count",
     files: "skills/setup-pstack/SKILL.md",
     match: "so the list length sets the count.",
-    replace: "so the list length sets the count, up to three, one per seat agent.",
+    replace: `so the list length sets the count, up to ${panelMax}, one per seat agent.`,
   },
   {
     id: "setup-heading",
@@ -309,6 +347,12 @@ const omp: Rule[] = [
     files: "skills/setup-pstack/SKILL.md",
     match: "when the rule records one.",
     replace: "when the file records one.",
+  },
+  {
+    id: "setup-no-file",
+    files: "skills/setup-pstack/SKILL.md",
+    match: "With no rule, say that",
+    replace: "With no file, say that",
   },
   {
     id: "setup-help-writes",
@@ -352,7 +396,7 @@ const omp: Rule[] = [
     files: "docs/guide/01-setup.md",
     match: /You only override what you care about\. A role with no line in the rule keeps the skill's default\.[^\n]*\n\nYou might be wondering what happens if you use Auto\.[^\n]*/g,
     replace:
-      'You only override what you care about. A role with no key keeps its agent\'s default model. To restore a default, delete that key. A rerun of `/setup-pstack` keeps any role whose model differs from the default.\n\nSet a role to `inherit-parent` or `auto` and setup writes it as `"@default"`, so that agent runs on your parent chat model. For a panel role the value is a list of up to three entries, one per seat agent, so the list length sets the panel size. Setup also configures `swarm workers`, the model for every `/swarm` worker.',
+      `You only override what you care about. A role with no key keeps its agent's default model. To restore a default, delete that key. A rerun of \`/setup-pstack\` keeps any role whose model differs from the default.\n\nSet a role to \`inherit-parent\` or \`auto\` and setup writes it as \`"@default"\`, so that agent runs on your parent chat model. For a panel role the value is a list of up to ${panelMax} entries, one per seat agent, so the list length sets the panel size. Setup also configures \`swarm workers\`, the model for every \`/swarm\` worker.`,
   },
   {
     id: "models-path",
@@ -365,9 +409,9 @@ const omp: Rule[] = [
     id: "skills-reflect-read-calls",
     files: "skills/reflect/references/*.md",
     match:
-      "- `Read` tool calls against any `SKILL.md` file (workspace `.cursor/skills/`, user-level `~/.cursor/skills/`, or plugin-installed paths under `~/.cursor/plugins/`)",
+      "a `Read` of its `SKILL.md` (under `.cursor/skills/`, `~/.cursor/skills/`, or `~/.cursor/plugins/`)",
     replace:
-      "- `read` tool calls against any `SKILL.md` file or `skill://` URL (workspace `.omp/skills/`, user-level `~/.omp/agent/skills/`, or a plugin's directory under `~/.omp/plugins/`)",
+      "a `read` of its `SKILL.md` or `skill://` URL (under `.omp/skills/`, `~/.omp/agent/skills/`, or a plugin's directory under `~/.omp/plugins/`)",
   },
   {
     id: "skills-user-dir",
@@ -394,12 +438,18 @@ const omp: Rule[] = [
     replace: `This workspace's sessions are the \`.jsonl\` files in ${sessionsDir}, ${bucket}. Use only that directory.`,
   },
   {
+    id: "transcripts-reflect-own",
+    files: "skills/reflect/SKILL.md",
+    match: "find this conversation's transcript in the `agent-transcripts/` directory the system prompt names.",
+    replace: `find this conversation's transcript among the \`.jsonl\` files in ${sessionsDir}, ${bucket}. Use only that directory.`,
+  },
+  {
     id: "transcripts-reflect-candidates",
     files: "skills/reflect/SKILL.md",
     match:
-      /```bash\nls -t <agent-transcripts>[^\n]*\n```\n\nThree transcript layouts:[^\n]*\n\nFor each candidate, read the first JSONL line and check that `message\.content\[0\]\.text` contains the conversation's opening user prompt\./g,
+      /```bash\nls -t <agent-transcripts>[^\n]*\n```\n\nThat covers the legacy flat [^\n]*?For each candidate, read the first JSONL line\. Take the file whose `message\.content\[0\]\.text` contains the conversation's opening user prompt\./g,
     replace:
-      '```bash\nls -t ~/.omp/agent/sessions/<bucket>/*.jsonl | head -10\n```\n\nFor each candidate, find the first `"type":"message"` entry with `"role":"user"` and check that its text contains the conversation\'s opening user prompt.',
+      '```bash\nls -t ~/.omp/agent/sessions/<bucket>/*.jsonl | head -10\n```\n\nFor each candidate, find the first `"type":"message"` entry with `"role":"user"`. Take the file whose text there contains the conversation\'s opening user prompt.',
   },
   {
     id: "transcripts-session-pickup",

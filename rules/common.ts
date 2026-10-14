@@ -32,8 +32,8 @@ const common: Rule[] = [
   {
     id: "team-kit-deslop-opening-a-pr",
     files: "skills/poteto-mode/playbooks/opening-a-pr.md",
-    match: "Run `/deslop` from `cursor-team-kit` over the diff before commit.",
-    replace: "Run `/deslop` over the diff before commit if it's installed. Otherwise skip it.",
+    match: "Run `/deslop` from `cursor-team-kit` over the diff before commit and",
+    replace: "Run `/deslop` over the diff before commit if it's installed, and",
   },
   {
     id: "team-kit-deslop-guide",
@@ -366,8 +366,8 @@ const common: Rule[] = [
   {
     id: "builtin-babysit-poteto-mode",
     files: "skills/poteto-mode/SKILL.md",
-    match: "and not Cursor's built-in babysit skill, whose description matches the same words.",
-    replace: "and not any other installed babysit skill whose description matches the same words.",
+    match: "not Cursor's built-in babysit skill, whose description matches the same words.",
+    replace: "not any other installed babysit skill whose description matches the same words.",
   },
   {
     id: "builtin-babysit-playbook",

@@ -19,16 +19,16 @@ The default role-to-model mapping is the file shape shown in step 5 below. If `~
 
 ### 3. Budget, map, and confirm
 
-**(a) Ask for a budget.** Prefer the `ask` tool over free text. Offer these four options with these exact labels, and name the current budget when the file records one.
+**(a) Ask for a budget.** Prefer the `ask` tool over free text. Offer these four options with these exact labels, and name the current budget when the file records one. With no file, say that `large` matches the skill defaults.
 
-- `unlimited — keep max`
+- `unlimited — max reasoning`
 - `large — xhigh reasoning`
 - `medium — high reasoning`
 - `small — medium reasoning`
 
-**(b) Apply it.** Build the working table from the skill defaults, and on a re-run keep any role you changed by family, list, or alias (`inherit-parent`, `auto`). `unlimited` leaves every effort as in that table. `large`, `medium`, and `small` set the effort token of every real slug, panel entries included, to `xhigh`, `high`, or `medium`. The effort token is the `:effort` suffix of a selector, on the ladder `max` > `xhigh` > `high` > `medium` > `low`. If the result is not a detected slug, use the same family's detected slug with the highest effort at or below the target, else mark the role as needing a choice. `inherit-parent` and `auto` do not change. So `small` turns `anthropic/claude-opus-5-5:max` into `anthropic/claude-opus-5-5:medium`, and `opencode-zen/grok-4.7:xhigh` into `opencode-zen/grok-4.7:medium`.
+**(b) Apply it.** Build the working table from the skill defaults, and on a re-run keep any role you changed by family, list, or alias (`inherit-parent`, `auto`). `unlimited`, `large`, `medium`, and `small` set the effort token of every real slug, panel entries included, to `max`, `xhigh`, `high`, or `medium`. The effort token is the `:effort` suffix of a selector, on the ladder `max` > `xhigh` > `high` > `medium` > `low`. If the result is not a detected slug, use the same family's detected slug with the highest effort at or below the target, else mark the role as needing a choice. `inherit-parent` and `auto` do not change. So `unlimited` turns `anthropic/claude-opus-5-5:xhigh` into `anthropic/claude-opus-5-5:max`. Grok slugs top out at `xhigh`, so under `unlimited` the fallback puts Grok at `xhigh` and keeps `opencode-zen/grok-4.7:xhigh` as it is. `large` keeps both defaults. `small` turns them into `anthropic/claude-opus-5-5:medium` and `opencode-zen/grok-4.7:medium`.
 
-**(c) Show the roles and confirm.** Show every role with its model, marking any real slug not in the detected set as needing a choice. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering the detected models plus `inherit-parent` and `auto` (both mean: this role runs on the parent chat model, and step 5 writes them as `"@default"`) as the options. Prefer the `ask` tool over free text. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, alias entries included, so the list length sets the count, up to three, one per seat agent. `arena cross-judge pool` is also a list, but Arena selects one value from it whose model family differs from the parent's when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+**(c) Show the roles and confirm.** Show every role with its model, marking any real slug not in the detected set as needing a choice. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering the detected models plus `inherit-parent` and `auto` (both mean: this role runs on the parent chat model, and step 5 writes them as `"@default"`) as the options. Prefer the `ask` tool over free text. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, alias entries included, so the list length sets the count, up to two, one per seat agent. `arena cross-judge pool` is also a list, but Arena selects one value from it whose model family differs from the parent's when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
 
 ### 4. Validate
 
@@ -40,7 +40,7 @@ Write `~/.omp/agent/pstack.yml`: a `# budget` comment with the chosen label and 
 
 ```yaml
 # pstack model configuration, written by /skill:setup-pstack. Delete a key to fall back to that agent's default.
-# budget: unlimited (max)
+# budget: large (xhigh)
 modelRoles:
   # feature, refactoring
   pstack-feature: opencode-zen/grok-4.7:xhigh
@@ -51,39 +51,35 @@ modelRoles:
   # hillclimb
   pstack-hillclimb: opencode-zen/grok-4.7:xhigh
   # judgment and prose
-  pstack-judgment: anthropic/claude-opus-5-5:max
+  pstack-judgment: anthropic/claude-opus-5-5:xhigh
   # hardest tasks
-  pstack-hardest: anthropic/claude-opus-5-5:max
+  pstack-hardest: anthropic/claude-opus-5-5:xhigh
   # how explorer
   pstack-how-explorer: opencode-zen/grok-4.7:xhigh
   # how explainer
-  pstack-how-explainer: anthropic/claude-opus-5-5:max
+  pstack-how-explainer: anthropic/claude-opus-5-5:xhigh
   # why investigators
   pstack-why-investigator: opencode-zen/grok-4.7:xhigh
   # why synthesizer
-  pstack-why-synthesizer: anthropic/claude-opus-5-5:max
+  pstack-why-synthesizer: anthropic/claude-opus-5-5:xhigh
   # reflect tooling
-  pstack-reflect-tooling: openai-codex/gpt-5.6-sol:max
+  pstack-reflect-tooling: opencode-zen/grok-4.7:xhigh
   # reflect judgment, divergent, synthesizer
-  pstack-reflect-judgment: anthropic/claude-opus-5-5:max
+  pstack-reflect-judgment: anthropic/claude-opus-5-5:xhigh
   # arena runners
-  pstack-arena-runner-1: anthropic/claude-opus-5-5:max
-  pstack-arena-runner-2: openai-codex/gpt-5.6-sol:max
-  pstack-arena-runner-3: opencode-zen/grok-4.7:xhigh
+  pstack-arena-runner-1: anthropic/claude-opus-5-5:xhigh
+  pstack-arena-runner-2: opencode-zen/grok-4.7:xhigh
   # arena cross-judge pool
-  pstack-arena-judge-1: anthropic/claude-opus-5-5:max
-  pstack-arena-judge-2: openai-codex/gpt-5.6-sol:max
-  pstack-arena-judge-3: opencode-zen/grok-4.7:xhigh
+  pstack-arena-judge-1: anthropic/claude-opus-5-5:xhigh
+  pstack-arena-judge-2: opencode-zen/grok-4.7:xhigh
   # swarm workers
   pstack-swarm-worker: opencode-zen/grok-4.7:xhigh
   # architect runners
-  pstack-architect-runner-1: anthropic/claude-opus-5-5:max
-  pstack-architect-runner-2: openai-codex/gpt-5.6-sol:max
-  pstack-architect-runner-3: opencode-zen/grok-4.7:xhigh
+  pstack-architect-runner-1: anthropic/claude-opus-5-5:xhigh
+  pstack-architect-runner-2: opencode-zen/grok-4.7:xhigh
   # interrogate reviewers
-  pstack-interrogate-reviewer-1: anthropic/claude-opus-5-5:max
-  pstack-interrogate-reviewer-2: openai-codex/gpt-5.6-sol:max
-  pstack-interrogate-reviewer-3: opencode-zen/grok-4.7:xhigh
+  pstack-interrogate-reviewer-1: anthropic/claude-opus-5-5:xhigh
+  pstack-interrogate-reviewer-2: opencode-zen/grok-4.7:xhigh
 task:
   maxRecursionDepth: 3
   isolation:

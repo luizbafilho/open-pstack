@@ -1,9 +1,9 @@
 ---
 name: pstack-architect-runner-2
-description: "pstack's `architect runners` role. Model: modelRoles.pstack-architect-runner-2, default openai-codex/gpt-5.6-sol:max."
+description: "pstack's `architect runners` role. Model: modelRoles.pstack-architect-runner-2, default opencode-zen/grok-4.7:xhigh."
 model:
   - "@pstack-architect-runner-2"
-  - openai-codex/gpt-5.6-sol:max
+  - opencode-zen/grok-4.7:xhigh
 ---
 # pstack worker
 
