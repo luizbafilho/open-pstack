@@ -226,6 +226,14 @@ const omp: Rule[] = [
     replace: "Substituting the bundled `task` agent skips that read and drifts.",
   },
   {
+    id: "agent-poteto-agent-lookup",
+    files: "agents/poteto-agent.md",
+    match:
+      "With no path, before any other work, search `~/.cursor/plugins/` for a file whose path ends in `skills/poteto-mode/SKILL.md`. If more than one file matches, use the copy whose `.cursor-plugin/plugin.json` has the highest `version`. Your skill catalog hides this skill, so a missing catalog entry does not mean pstack is absent. If no such file exists, stop and tell your parent.",
+    replace:
+      "With no path, before any other work, read `skill://poteto-mode`, which this agent autoloads. Your skill catalog hides this skill, so a missing catalog entry does not mean pstack is absent. If that read fails, stop and tell your parent.",
+  },
+  {
     id: "agent-comment-sicko-spawn",
     files: "skills/no-comments/SKILL.md",
     match: 'Spawn `Task` with `subagent_type: "comment-sicko"`.',

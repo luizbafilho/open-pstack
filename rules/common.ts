@@ -381,6 +381,18 @@ const common: Rule[] = [
     match: "can start Cursor's own skill for the same job instead.",
     replace: "can start another installed skill for the same job instead.",
   },
+  {
+    id: "builtin-visualize-picture",
+    files: "skills/ketchup/SKILL.md",
+    match: "a chart or diagram from `/visualize`,",
+    replace: "a chart,",
+  },
+  {
+    id: "builtin-visualize-numbers",
+    files: "skills/ketchup/SKILL.md",
+    match: "and a `/visualize` chart for numbers.",
+    replace: "and a chart for numbers.",
+  },
 ]
 
 export default common
