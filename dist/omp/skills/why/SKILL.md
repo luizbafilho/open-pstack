@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Investigate the motivation and intent behind code. The companion `how` skill answers what the code does and how it works. `why` answers what forces led to its shape.
 
-Each spawn below names a pstack agent. omp picks each agent's model from its `modelRoles` key in `~/.omp/agent/pstack.yml`, which `/skill:setup-pstack` writes, and falls back to the agent's default.
+Each spawn below names a pstack agent. omp picks each agent's model from its `modelRoles` key in `~/.omp/agent/pstack.yml`, which `/skill:setup-pstack` writes, and falls back to the agent's default. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
 
 The pstack agents below have the MCP access the MCP-backed investigators and the synthesizer's citation spot-checks need. Investigators still shouldn't write anything.
 

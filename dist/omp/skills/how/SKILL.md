@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
 
-Explorers run as `pstack-how-explorer` and every explainer runs as `pstack-how-explainer`. Both agents are read-only. omp picks each agent's model from its `modelRoles` key in `~/.omp/agent/pstack.yml`, which `/skill:setup-pstack` writes, and falls back to the agent's default.
+Explorers run as `pstack-how-explorer` and every explainer runs as `pstack-how-explainer`. Both agents are read-only. omp picks each agent's model from its `modelRoles` key in `~/.omp/agent/pstack.yml`, which `/skill:setup-pstack` writes, and falls back to the agent's default. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
 
 ## 1. Assess complexity
 

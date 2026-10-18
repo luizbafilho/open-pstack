@@ -93,8 +93,8 @@ const opencode: Rule[] = [
   },
   {
     id: "agent-model-families",
-    match: "Families go by prefix: `claude-*` and `grok-*`",
-    replace: "Families go by model name after the provider: `claude-*` and `grok-*`",
+    match: /Families go by prefix: `claude-\*`, and `grok-\*` with `cursor-grok-\*` and `composer-\*`\. A refused `composer-\*` entry runs on (?:Reviewer B's default|`grok-4\.7-xhigh-fast`)\./g,
+    replace: "Families go by model name after the provider: `claude-*` and `grok-*`.",
   },
   {
     id: "agent-orchestrate-nesting",
@@ -437,7 +437,7 @@ const opencode: Rule[] = [
     id: "guide-custom-mode-setup",
     files: "docs/guide/01-setup.md",
     match:
-      "pick it from the `/` menu with Option+Enter (Mac) or Alt+Enter (Windows) instead of Enter. That makes it a [Custom Mode](https://cursor.com/docs/skills), which stays in context on every turn until you exit it. Custom Modes are available in the Agents Window and the CLI. Plain Enter attaches the skill to one message,",
+      /pick it from the `\/` menu with Option\+Enter \(Mac\) or Alt\+Enter \(Windows\) instead of Enter\. That makes it a \[Custom Mode\]\(https:\/\/cursor\.com\/docs\/skills(?:#using-a-skill-as-a-custom-mode)?\), which stays in context on every turn until you exit it\. Custom Modes are available in the Agents Window and the CLI\. Plain Enter attaches the skill to one message,/,
     replace:
       "switch to the `poteto` agent to keep poteto-mode on every turn. That agent loads the skill at the start of the session and applies it until you switch back. Typing `/poteto-mode` attaches the skill to one message,",
   },

@@ -28,7 +28,7 @@ Update mode changes the rest of the flow:
 
 Locate the active workspace's transcripts before fanning out. List this workspace's sessions, newest first, with `opencode api get "/api/session?directory=$PWD&order=desc"`, and read one with `opencode api get "/api/session/<id>/message"`. Redirect each call's output to a file and read that, because piped `opencode api` output can be cut off. Use only those sessions. Never list sessions without `directory`. That crosses workspace boundaries and reads private chats from unrelated projects.
 
-Survey recent agent conversations within that scope for recurring patterns. Run multiple parallel subagents across slices of history (e.g. last 2-4 weeks, split into 3 slices so each has enough material). Each slice mining subagent reads the workspace's sessions the parent lists, looks for the signals below, and returns a short structured list of patterns it saw with evidence pointers. Default signals worth hunting:
+Survey recent agent conversations within that scope for recurring patterns. Run multiple parallel subagents across slices of history (e.g. last 2-4 weeks, split into 3 slices so each has enough material). Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill. Each slice mining subagent reads the workspace's sessions the parent lists, looks for the signals below, and returns a short structured list of patterns it saw with evidence pointers. Default signals worth hunting:
 
 - Response preferences (length, tone, format, "dumb it down" corrections)
 - Delegation habits (subagents, models, specialized workflows, parallelism)

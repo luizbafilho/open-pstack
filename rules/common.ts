@@ -199,12 +199,6 @@ const common: Rule[] = [
     replace: '"1h heartbeat watcher"',
   },
   {
-    id: "loop-local-and-cloud-roots",
-    files: "skills/poteto-mode/playbooks/autopilot-full.md",
-    match: " `/loop` works in local and cloud roots.",
-    replace: "",
-  },
-  {
     id: "loop-dynamic-mode",
     match: "under `/loop` in dynamic mode",
     replace: "under a heartbeat watcher",
@@ -247,29 +241,16 @@ const common: Rule[] = [
       "- There's no `/loop` or `/create-skill` command. pstack uses a heartbeat watcher (a background subagent) where upstream used `/loop`, and writes `SKILL.md` files to the Agent Skills spec where upstream used `/create-skill`.",
   },
 
-  // Cloud agents: a local subagent in its own worktree.
   {
     id: "cloud-owner-per-pr",
-    match: "One Cursor cloud agent per PR owns",
-    replace: "One subagent per PR, in its own worktree, owns",
+    match: "Each owner is a Cursor cloud agent",
+    replace: "Each owner is a subagent in its own worktree",
   },
   {
     id: "cloud-each-verifier",
     files: "skills/poteto-mode/playbooks/shipping.md",
     match: "each a Cursor cloud agent,",
     replace: "each in its own worktree,",
-  },
-  {
-    id: "cloud-swarm-intro",
-    files: "skills/swarm/SKILL.md",
-    match: "Fan out N parallel cloud workers.",
-    replace: "Fan out N parallel workers, each a subagent in its own worktree.",
-  },
-  {
-    id: "cloud-swarm-concurrency",
-    files: "skills/swarm/SKILL.md",
-    match: "N is total workers, not the cloud concurrency limit.",
-    replace: "N is total workers, not a concurrency limit.",
   },
   {
     id: "cloud-swarm-base-branch",
@@ -282,12 +263,6 @@ const common: Rule[] = [
     files: "skills/poteto-mode/playbooks/orchestrate.md",
     match: "its spawn budget with the cloud default and the local exception list,",
     replace: "its spawn budget,",
-  },
-  {
-    id: "cloud-orchestrate-restacks",
-    files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match: "Restacks run in cloud. A local restack at this scale takes the laptop down.",
-    replace: "Restacks run in a subagent, one at a time. Parallel restacks at this scale take the laptop down.",
   },
   {
     id: "cloud-orchestrate-liveness",
