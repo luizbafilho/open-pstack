@@ -9,6 +9,7 @@ import slugs from "../rules/slugs"
 import { convertAgents, convertOmpAgents } from "./agents"
 import { emit } from "./emit"
 import { normalizeSkills, parseFrontmatter } from "./frontmatter"
+import { addHarnessGuidance } from "./harness"
 import { formatFindings, lint } from "./lint"
 import { loadTree } from "./load"
 import { rewrite } from "./rewrite"
@@ -53,6 +54,7 @@ const findings: Finding[] = []
 
 for (const [target, spec] of Object.entries(targets) as [Target, TargetSpec][]) {
   const rewritten = rewrite(normalizeSkills(selected), [...spec.rules, ...slugRules(target)])
+  addHarnessGuidance(rewritten.files, selected)
   const files = spec.agents(rewritten.files)
 
   for (const [path, content] of await loadTree(join(root, "adapters", target))) files.set(path, content)

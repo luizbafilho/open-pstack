@@ -14,7 +14,7 @@ Every candidate gets the same prompt, so the prompt is the contract.
 
 1. State the artifact each candidate is producing.
 2. Derive the rubric, 3-6 concrete gradeable criteria for what success looks like on *this* task. It is the picker's tool in Phase D. Candidates only see the task.
-3. Pick the runners: the `pstack-arena-runner-1` to `pstack-arena-runner-2` agents, whose defaults are `anthropic/claude-opus-5-5:xhigh` and `opencode-zen/grok-4.7:xhigh`. Run the seats that have a `modelRoles` key in `~/.omp/agent/pstack.yml`, or all of them when none has one. Run a seat more than once to cover more design directions, or when the work is generation-bound rather than judgment-sensitive.
+3. Pick the runners: the `pstack-arena-runner-1` to `pstack-arena-runner-2` agents, whose defaults are `anthropic/claude-opus-5-5:xhigh` and `opencode-zen/grok-4.7:xhigh`. Run the seats that have a `modelRoles` key in `~/.omp/agent/pstack.yml`, or all of them when none has one. Run a seat more than once to cover more design directions, or when the work is generation-bound rather than judgment-sensitive. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
 4. Give each candidate its own output location (a git worktree where possible, otherwise `/tmp/arena-<slug>/candidate-<n>/`), per the **separate-before-serializing-shared-state** principle skill.
 
 ## Phase B: Fan out

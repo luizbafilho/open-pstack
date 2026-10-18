@@ -1,8 +1,8 @@
 {
   "name": "open-pstack-omp",
-  "version": "0.15.23",
+  "version": "0.15.26",
   "description": "pstack's skills and agents for omp",
   "pstack": {
-    "upstreamSha": "c86f349b102feb91f1966f8a6a60882a4e601b50"
+    "upstreamSha": "0b8e952052d482ee6de06deebf14d590d77b1b34"
   }
 }
