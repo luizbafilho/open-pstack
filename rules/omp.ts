@@ -559,8 +559,7 @@ const omp: Rule[] = [
   {
     id: "help-built-for",
     files: "skills/poteto-help/SKILL.md",
-    match:
-      "pstack is built for Cursor. Its skills use the Agent Skills format, so other tools can read them. But most workflow skills, including `/poteto-mode`, `/how`, `/why`, and `/teach`, spawn Cursor subagents with per-role models, and Custom Modes and `/loop` are Cursor features, so those parts may not work there.",
+    match: /pstack is built for Cursor, and it also installs in Claude Code[^\n]*\n\nOther tools can read the skills, because they use the Agent Skills format\.[^\n]*/g,
     replace: `This is open-pstack, the omp port of pstack. Its skills use the Agent Skills format. Most workflow skills, including \`/poteto-mode\`, \`/how\`, \`/why\`, and \`/teach\`, spawn subagents through the \`task\` tool, one pstack agent per role, with models from ${configFile}.`,
   },
   {
@@ -588,7 +587,7 @@ const omp: Rule[] = [
   {
     id: "guide-install",
     files: "docs/guide/01-setup.md",
-    match: "In a Cursor chat, run:\n\n```text\n/add-plugin pstack\n```\n\nCursor confirms the plugin is installed.",
+    match: /In a Cursor chat, run:\n\n```text\n\/add-plugin pstack\n```\n\nCursor confirms the plugin is installed\.\n\nIn Claude Code, run [^\n]*/g,
     replace:
       "Follow the [README](../../README.md): add the open-pstack marketplace and install the plugin.\n\n```text\nomp plugin marketplace add luizbafilho/open-pstack\nomp plugin install pstack@open-pstack\n```\n\n`/poteto-mode` shows up as a command in the next session.",
   },
