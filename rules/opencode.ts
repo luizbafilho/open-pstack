@@ -399,8 +399,7 @@ const opencode: Rule[] = [
   {
     id: "help-built-for",
     files: "skills/poteto-help/SKILL.md",
-    match:
-      "pstack is built for Cursor. Its skills use the Agent Skills format, so other tools can read them. But most workflow skills, including `/poteto-mode`, `/how`, `/why`, and `/teach`, spawn Cursor subagents with per-role models, and Custom Modes and `/loop` are Cursor features, so those parts may not work there.",
+    match: /pstack is built for Cursor, and it also installs in Claude Code[^\n]*\n\nOther tools can read the skills, because they use the Agent Skills format\.[^\n]*/g,
     replace:
       "This is open-pstack, the OpenCode port of pstack. Its skills use the Agent Skills format. Most workflow skills, including `/poteto-mode`, `/how`, `/why`, and `/teach`, spawn subagents through the `subagent` tool with per-role models from `pstack-models.md`.",
   },
@@ -429,7 +428,7 @@ const opencode: Rule[] = [
   {
     id: "guide-install",
     files: "docs/guide/01-setup.md",
-    match: "In a Cursor chat, run:\n\n```text\n/add-plugin pstack\n```\n\nCursor confirms the plugin is installed.",
+    match: /In a Cursor chat, run:\n\n```text\n\/add-plugin pstack\n```\n\nCursor confirms the plugin is installed\.\n\nIn Claude Code, run [^\n]*/g,
     replace:
       "Follow the [README](../../README.md): add open-pstack's `dist/opencode` directory to `plugins` in your `opencode.json`, then run this in that directory:\n\n```text\nbun install --frozen-lockfile\n```\n\n`/poteto-mode` shows up in the `/` menu of the next session.",
   },
