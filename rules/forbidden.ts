@@ -21,8 +21,9 @@ const forbidden: Forbidden[] = [
 
 // Terms only one target must not ship, such as another target's tool names.
 export const targetForbidden: Record<Target, Forbidden[]> = {
-  opencode: [],
+  opencode: [{ id: "omp-heartbeat-watcher", pattern: /heartbeat watcher/g }],
   omp: [
+    { id: "opencode-loop-tools", pattern: /\bloop_(?:arm|list|cancel)\b/g },
     { id: "opencode-models-file", pattern: /pstack-models/g },
     { id: "opencode-subagent-tool", pattern: /`subagent` tool/g },
     { id: "opencode-background", pattern: /`background: true`/g },
