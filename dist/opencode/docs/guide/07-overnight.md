@@ -32,7 +32,7 @@ Walk through what each line buys you:
 - "done means..." turns the goal into checks every iteration can run.
 - "fresh worktree off `<base>`" keeps the run from colliding with anything else you have open.
 - "don't ask me before committing" pre-answers the permission the agent would otherwise block on.
-- "loop until done" makes the [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) start a heartbeat watcher, a background subagent that re-checks the finish condition on events or on a timer.
+- "loop until done" makes the [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) arm a loop with the loop plugin's `loop_arm` tool. Each wake re-checks the finish condition, on an event or on a timer.
 - The escape hatch lets it stop at a genuine dead end and write up why, which beats eight hours of creative goal reinterpretation.
 
 Because you'll review this work after stepping away, `/poteto-mode` routes it through [`/figure-it-out`](../../skills/figure-it-out/SKILL.md), which designs the run's phases before any code and wires in the decision log.

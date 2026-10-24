@@ -52,6 +52,53 @@ function setupShape(): string {
 }
 
 const omp: Rule[] = [
+  // omp has no /loop: a background watcher subagent with a heartbeat stands in.
+  {
+    id: "loop-autonomous-run-wake",
+    files: "skills/poteto-mode/playbooks/autonomous-run.md",
+    match: "Pick the wake mechanism using Cursor's `/loop` command (a built-in, not a pstack skill).",
+    replace:
+      "Pick the wake mechanism: a heartbeat watcher. That's a background subagent that waits for an event or an interval, re-checks the finish condition, and returns. Its return wakes you.",
+  },
+  {
+    id: "loop-bug-fix",
+    files: "skills/poteto-mode/playbooks/bug-fix.md",
+    match: "Drive a long or stubborn hunt with Cursor's `/loop` command.",
+    replace: "Drive a long or stubborn hunt with a heartbeat watcher (Autonomous run step 2).",
+  },
+  {
+    id: "loop-1h-backticked",
+    files: "skills/poteto-mode/playbooks/*.md",
+    match: "`/loop 1h`",
+    replace: "a 1h heartbeat watcher",
+  },
+  {
+    id: "loop-1h-check-plan-marker",
+    files: "skills/poteto-mode/scripts/check-plan.mjs",
+    match: '"/loop 1h"',
+    replace: '"1h heartbeat watcher"',
+  },
+  {
+    id: "loop-dynamic-mode",
+    match: "under `/loop` in dynamic mode",
+    replace: "under a heartbeat watcher",
+  },
+  {
+    id: "loop-guide-overnight",
+    files: "docs/guide/07-overnight.md",
+    match:
+      "- `/loop` is Cursor's built-in wake mechanism, not a pstack skill. The [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) uses it to re-check the finish condition on events or a heartbeat.",
+    replace:
+      '- "loop until done" makes the [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) start a heartbeat watcher, a background subagent that re-checks the finish condition on events or on a timer.',
+  },
+  {
+    id: "loop-create-skill-not-in-pstack",
+    files: "skills/poteto-help/SKILL.md",
+    match: "- `/loop` and `/create-skill` are Cursor built-ins.",
+    replace:
+      "- There's no `/loop` or `/create-skill` command. pstack uses a heartbeat watcher (a background subagent) where upstream used `/loop`, and writes `SKILL.md` files to the Agent Skills spec where upstream used `/create-skill`.",
+  },
+
   // Role agents: omp's task tool has no per-call model, so each role is an agent.
   {
     id: "role-preamble",
