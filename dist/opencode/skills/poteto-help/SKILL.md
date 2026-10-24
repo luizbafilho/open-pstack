@@ -111,7 +111,7 @@ Close calls:
 Not in pstack:
 
 - `/deslop`, `control-cli`, and `control-ui` are separate skills. pstack uses them when they're installed and skips those steps otherwise.
-- There's no `/loop` or `/create-skill` command. pstack uses a heartbeat watcher (a background subagent) where upstream used `/loop`, and writes `SKILL.md` files to the Agent Skills spec where upstream used `/create-skill`.
+- `/loop` and the `loop_arm`, `loop_list`, and `loop_cancel` tools come from a separate OpenCode loop plugin. Without it, long runs can't wake themselves. There's no `/create-skill` command. pstack writes `SKILL.md` files to the Agent Skills spec where upstream used `/create-skill`.
 - pstack has no `/orchestrate` skill. Orchestrate is a `/poteto-mode` playbook. If the slash menu shows `/orchestrate`, another plugin provides it.
 
 ## Playbooks and principles

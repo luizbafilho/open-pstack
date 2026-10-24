@@ -6,6 +6,71 @@ const readSession = 'opencode api get "/api/session/<id>/message"'
 const redirectNote = "Redirect each call's output to a file and read that, because piped `opencode api` output can be cut off."
 
 const opencode: Rule[] = [
+  // /loop and the loop_arm, loop_list, loop_cancel tools come from a separate loop plugin.
+  {
+    id: "loop-autonomous-run-wake",
+    files: "skills/poteto-mode/playbooks/autonomous-run.md",
+    match:
+      "Pick the wake mechanism using Cursor's `/loop` command (a built-in, not a pstack skill). An event to watch (CI, a merge, a ref advancing) gets a watcher subagent that wakes you on the event, with a long time-based heartbeat as fallback. No event gets a fixed-interval heartbeat sized to when the result is worth re-checking.",
+    replace:
+      "Pick the wake mechanism and arm it yourself with the `loop_arm` tool from the loop plugin. Give the loop a `name` and the `prompt` each wake delivers. An event to watch (CI, a merge, a ref advancing) gets a `watch` command that exits on the event, with a long `fallback` interval. No event gets an `every` interval sized to when the result is worth re-checking. When a command can check the exit condition, pass it as `until`, and the loop ends once it exits 0.",
+  },
+  {
+    id: "loop-bug-fix",
+    files: "skills/poteto-mode/playbooks/bug-fix.md",
+    match: "Drive a long or stubborn hunt with Cursor's `/loop` command.",
+    replace: "Drive a long or stubborn hunt under a loop you arm with `loop_arm` (Autonomous run step 2).",
+  },
+  {
+    id: "loop-audit-tick",
+    files: "skills/poteto-mode/playbooks/multi-phase-plan.md",
+    match: "arm the audit tick as `/loop 1h` with the tick prompt below.",
+    replace:
+      'arm the audit tick as `/loop 1h`: call `loop_arm` with `name: "audit"`, `every: "1h"`, and the tick prompt below as `prompt`.',
+  },
+  {
+    id: "loop-autopilot-audit",
+    files: "skills/poteto-mode/playbooks/autopilot-full.md",
+    match: "arm `/loop 1h` to audit until no delegated work is left,",
+    replace:
+      'arm an hourly audit with `loop_arm` (`every: "1h"`, the audit as `prompt`) and cancel it with `loop_cancel` once no delegated work is left,',
+  },
+  {
+    id: "loop-dynamic-mode",
+    files: "skills/poteto-mode/playbooks/babysit.md",
+    match: "Run `drive` and `background` under `/loop` in dynamic mode.",
+    replace:
+      "Run `drive` and `background` under `/loop` in dynamic mode, arming each wake yourself with `loop_arm`. Pass a `name`, the next pass as `prompt`, and either the watcher command as `watch` or the delay the next check deserves as `after`. Arming the same `name` again replaces the loop.",
+  },
+  {
+    id: "loop-shipping-queued-watch",
+    files: "skills/poteto-mode/playbooks/shipping.md",
+    match: "under `/loop` until it reports `COMPLETE` at the ceiling.",
+    replace:
+      "as the `watch` command of a `loop_arm` loop. Each time it exits short of `COMPLETE` at the ceiling, arm the loop again with the same list.",
+  },
+  {
+    id: "loop-orchestrate-frontier",
+    files: "skills/poteto-mode/playbooks/orchestrate.md",
+    match: "(arm it via the loop skill, with a long heartbeat fallback)",
+    replace: "(arm it with `loop_arm` as a `watch` command with a long `fallback`)",
+  },
+  {
+    id: "loop-guide-overnight",
+    files: "docs/guide/07-overnight.md",
+    match:
+      "- `/loop` is Cursor's built-in wake mechanism, not a pstack skill. The [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) uses it to re-check the finish condition on events or a heartbeat.",
+    replace:
+      '- "loop until done" makes the [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) arm a loop with the loop plugin\'s `loop_arm` tool. Each wake re-checks the finish condition, on an event or on a timer.',
+  },
+  {
+    id: "loop-create-skill-help",
+    files: "skills/poteto-help/SKILL.md",
+    match: "- `/loop` and `/create-skill` are Cursor built-ins.",
+    replace:
+      "- `/loop` and the `loop_arm`, `loop_list`, and `loop_cancel` tools come from a separate OpenCode loop plugin. Without it, long runs can't wake themselves. There's no `/create-skill` command. pstack writes `SKILL.md` files to the Agent Skills spec where upstream used `/create-skill`.",
+  },
+
   // Subagent types.
   {
     id: "agent-poteto-agent-description",

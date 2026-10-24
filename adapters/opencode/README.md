@@ -26,6 +26,10 @@ pstack's playbooks also spawn subagents from inside subagents, and OpenCode allo
 }
 ```
 
+The playbooks' `/loop` command and the `loop_arm`, `loop_list`, and `loop_cancel` tools come from a separate OpenCode loop plugin, not this one. Install it as well. Without it, nothing wakes a session between turns, so Autonomous run, Babysit, Shipping, Orchestrate, and a multi-phase plan's audit tick stop when the agent ends its turn.
+
+Put the loop plugin's directory at `~/.config/opencode/plugins/loop/`, where OpenCode loads it automatically, or add its absolute path to `plugins`. It has no dependencies to install.
+
 The plugin API can't register agents, so link the three agent files into your agents directory:
 
 ```sh
