@@ -8,7 +8,7 @@ import opencode from "../rules/opencode"
 import slugs from "../rules/slugs"
 import { convertAgents, convertOmpAgents } from "./agents"
 import { emit } from "./emit"
-import { normalizeSkills, parseFrontmatter } from "./frontmatter"
+import { normalizeSkills } from "./frontmatter"
 import { addHarnessGuidance } from "./harness"
 import { formatFindings, lint } from "./lint"
 import { loadTree } from "./load"
@@ -23,10 +23,6 @@ const reportPath = reportIndex === -1 ? undefined : process.argv[reportIndex + 1
 const upstream = (await Bun.file(join(root, "upstream", "UPSTREAM.json")).json()) as Upstream
 const selected = select(await loadTree(join(root, "upstream", "pstack")), drop)
 
-const potetoSkill = selected.get("skills/poteto-mode/SKILL.md")
-if (typeof potetoSkill !== "string") throw new Error("upstream has no skills/poteto-mode/SKILL.md")
-const reminder = String(parseFrontmatter(potetoSkill).doc.get("reminder"))
-
 const skillIds = [...selected.keys()].flatMap((path) => /^skills\/([^/]+)\/SKILL\.md$/.exec(path)?.[1] ?? [])
 
 // omp registers skills as `/skill:<id>`, never as a bare `/<id>`.
@@ -39,7 +35,7 @@ const skillCommands: Rule = {
 type TargetSpec = { rules: Rule[]; agents: (files: FileMap) => FileMap }
 
 const targets: Record<Target, TargetSpec> = {
-  opencode: { rules: [...common, ...opencode], agents: (files) => convertAgents(files, { reminder }) },
+  opencode: { rules: [...common, ...opencode], agents: convertAgents },
   omp: { rules: [...common, ...omp, skillCommands], agents: (files) => convertOmpAgents(files, slugs.omp) },
 }
 
