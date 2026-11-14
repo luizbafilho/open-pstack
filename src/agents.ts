@@ -14,7 +14,7 @@ function upstreamAgent(files: FileMap, path: string): { description: string; bod
   return { description: String(doc.get("description")), body }
 }
 
-export function convertAgents(files: FileMap, potetoMode: { reminder: string }): FileMap {
+export function convertAgents(files: FileMap): FileMap {
   const poteto = upstreamAgent(files, "agents/poteto-agent.md")
   const sicko = upstreamAgent(files, "agents/comment-sicko.md")
 
@@ -28,8 +28,7 @@ export function convertAgents(files: FileMap, potetoMode: { reminder: string }):
     "agents/poteto.md",
     agentFile(
       { description: "pstack's poteto-mode as an always-on agent", mode: "primary" },
-      "Load the `poteto-mode` skill with the skill tool at the start of the session, and apply it on every turn per this reminder:\n\n" +
-        `${potetoMode.reminder}\n`,
+      "Load the `poteto-mode` skill with the skill tool at the start of the session, and apply it on every turn.\n",
     ),
   )
   return out
