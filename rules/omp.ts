@@ -132,7 +132,7 @@ const omp: Rule[] = [
     id: "role-poteto-mode-defaults",
     files: "skills/poteto-mode/SKILL.md",
     match:
-      "`run_in_background: true`, agent mode (readonly strips MCP), file pointers not inlined context, explicit model per role (configurable via `/setup-pstack`.",
+      "`run_in_background: true` (a steer or resume of a running agent too, because a foreground call holds your turn while other reports wait), agent mode (readonly strips MCP), file pointers not inlined context, explicit model per role (configurable via `/setup-pstack`.",
     replace: "file pointers not inlined context, one role agent per role (models configurable via `/setup-pstack`.",
   },
   {
@@ -146,6 +146,12 @@ const omp: Rule[] = [
     id: "role-playbook-delegate",
     match: /a subagent using your configured (feature|refactoring|bug-fix|perf-issue|hillclimb) model \(default `[^`]+`\)/g,
     replace: (_m, role: string) => `a \`poteto-agent-${role === "refactoring" ? "feature" : role}\` subagent`,
+  },
+  {
+    id: "role-poteto-mode-rejected-slug",
+    files: "skills/poteto-mode/SKILL.md",
+    match: /If the Task tool rejects that too, continue with the calling skill's fallback\.[^\n]*?Say so in both cases\./g,
+    replace: "If that fails too, say so and continue with the calling skill's fallback.",
   },
   {
     id: "role-multi-phase-explore",
@@ -184,7 +190,7 @@ const omp: Rule[] = [
     id: "role-arena-runners",
     files: "skills/arena/SKILL.md",
     match: new RegExp(
-      `Pick the runners\\. Use the \`arena runners\` line in \`~/\\.cursor/rules/pstack-models\\.mdc\`\\. If the rule or that line is missing, default to one each on ${defaultList}\\.[^\\n]*?use the closest valid slug of the same family from its error message\\.`,
+      `Pick the runners\\. Use the \`arena runners\` line in \`~/\\.cursor/rules/pstack-models\\.mdc\`\\. If the rule or that line is missing, default to one each on ${defaultList}\\.[^\\n]*?so it runs on the parent model when none remain, and say so\\.`,
       "g",
     ),
     replace: (_m, defaults: string) =>
@@ -208,11 +214,11 @@ const omp: Rule[] = [
     id: "role-arena-judge",
     files: "skills/arena/SKILL.md",
     match: new RegExp(
-      `choose one model from the \`arena cross-judge pool\` line in \`~/\\.cursor/rules/pstack-models\\.mdc\`\\. If the rule or that line is missing, choose from ${defaultList}\\. Prefer a different model family from the parent's\\. Spawn one readonly judge subagent on that model\\.`,
+      `choose one model from the \`arena cross-judge pool\` line in \`~/\\.cursor/rules/pstack-models\\.mdc\`\\. If the rule or that line is missing, choose from ${defaultList}\\. Spawn one readonly judge subagent\\.[^\\n]*?say that the family check did not run\\.`,
       "g",
     ),
     replace: (_m, defaults: string) =>
-      `choose one of the ${seatRange("arena cross-judge pool")} agents. Their models are their \`modelRoles\` keys in ${configFile}, or ${defaults} when unset. Prefer one whose provider differs from the parent's. Spawn that one read-only judge.`,
+      `choose one of the ${seatRange("arena cross-judge pool")} agents. Their models are their \`modelRoles\` keys in ${configFile}, or ${defaults} when unset. Pick one whose provider differs from the parent's and spawn it as the read-only judge. If none differs or the spawn fails, skip the judge, pick the base alone in Phase D, and say so.`,
   },
   {
     id: "role-architect-runners",
@@ -225,24 +231,16 @@ const omp: Rule[] = [
       `Run the ${seatRange("architect runners")} agents in place of the arena runners, picking seats as the **arena** skill's Phase A does. Their defaults are ${defaults}.`,
   },
   {
-    id: "role-interrogate-launch",
+    id: "role-interrogate-seats",
     files: "skills/interrogate/SKILL.md",
-    match:
-      "Launch all reviewers in a single message with the Task tool, one per entry on the `interrogate reviewers` line in `~/.cursor/rules/pstack-models.mdc`, labeled Reviewer A, B, and so on to match the entry count. If the rule or that line is missing, use the table defaults.",
-    replace: `Launch all reviewers in one \`task\` call. Reviewers ${seatLabels("interrogate reviewers")} run as ${seatRange("interrogate reviewers")}. ${seatPick} The table lists each seat's default model.`,
+    match: "Read the `interrogate reviewers` line in place of `arena runners`.",
+    replace: `Run the ${seatRange("interrogate reviewers")} agents in place of the arena runners.`,
   },
   {
-    id: "role-interrogate-list",
+    id: "role-interrogate-spawn",
     files: "skills/interrogate/SKILL.md",
-    match:
-      "Each reviewer gets `subagent_type: generalPurpose`, `readonly: true`, and `model` set to its configured entry, or its table default when there is no configured line. Omit `model` for an `auto` or `inherit-parent` entry, so that reviewer runs on the parent model.",
-    replace: "Each reviewer runs on its seat agent, which is read-only.",
-  },
-  {
-    id: "role-interrogate-rejected",
-    files: "skills/interrogate/SKILL.md",
-    match: /If the Task tool rejects a configured entry, run that reviewer on its family's table default and say so\.[^\n]*Never treat an alias entry as a rejected slug or apply either fallback to it\./g,
-    replace: "Do not block the review on a model problem. Report it and run the remaining seats.",
+    match: "Spawn each adversary as `generalPurpose`.",
+    replace: "Spawn each adversary on its seat agent, which can write repros in its worktree.",
   },
   {
     id: "role-swarm-model",
@@ -255,14 +253,14 @@ const omp: Rule[] = [
     id: "role-swarm-spawn",
     files: "skills/swarm/SKILL.md",
     match:
-      'Spawn all N workers in one message with `subagent_type: generalPurpose`, `environment: "cloud"`, `run_in_background: true`, and the step 4 model, left unset for `auto` or `inherit-parent`. Use `environment: "local"` only when the worker needs access to something on the user\'s computer.',
+      'Spawn all N workers in one message with `subagent_type: generalPurpose`, `environment: "cloud"`, `run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Use `environment: "local"` only when the worker needs access to something on the user\'s computer.',
     replace: `Spawn all N workers in one \`task\` call on \`${agentFor("swarm workers")}\` (or the race seats), with \`isolated: true\` on every worker that writes. omp gives each isolated worker its own copy of the checkout and captures its changes as a patch.`,
   },
   {
     id: "role-orchestrate-nesting",
     files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match: "(nesting works to depth 3, and a nested spawn has the full Task schema including `environment`)",
-    replace: `(nesting works to depth 3 with \`task.maxRecursionDepth: 3\`, which ${configFile} sets. A nested spawn has the full \`task\` schema, including \`isolated\`)`,
+    match: "Stop at three levels: you, sub-coordinators, and workers.",
+    replace: `Stop at three levels: you, sub-coordinators, and workers. That depth needs \`task.maxRecursionDepth: 3\`, which ${configFile} sets.`,
   },
 
   // Remaining subagent types.
@@ -535,9 +533,9 @@ const omp: Rule[] = [
     id: "transcripts-worktree-audit-lookup",
     files: "skills/poteto-mode/scripts/worktree-audit.sh",
     match:
-      '\t# Most recent chat whose transcript operated in this worktree. Match path\n\t# followed by "/" or a quote so glint-482 does not match glint-482-r37.\n\tlast="-"; last_ts=0\n\tif [ -d "$transcripts" ]; then\n\t\tf=$(rg -l -e "${wt}/" -e "${wt}\\"" "$transcripts" 2>/dev/null \\\n\t\t\t| xargs stat -f \'%m %N\' 2>/dev/null | sort -rn | head -1)\n\t\tif [ -n "$f" ]; then last_ts=$(echo "$f" | awk \'{print $1}\')\n\t\t\tlast=$(date -r "$last_ts" \'+%Y-%m-%d\' 2>/dev/null); fi\n\tfi\n',
+      '\t# Most recent chat whose transcript operated in this worktree. Match path\n\t# followed by "/" or a quote so glint-482 does not match glint-482-r37.\n\tlast="-"; last_ts=0\n\tif [ -d "$transcripts" ]; then\n\t\tf=$(rg -l -e "${wt}/" -e "${wt}\\"" "$transcripts" 2>/dev/null \\\n\t\t\t| xargs stat "${stat_fmt[@]}" 2>/dev/null | sort -rn | head -1)\n\t\tif [ -n "$f" ]; then last_ts=$(echo "$f" | awk \'{print $1}\')\n\t\t\tlast=$(fmt_day "$last_ts" 2>/dev/null); fi\n\tfi\n',
     replace:
-      '\t# Most recent omp session started in this worktree.\n\tlast="-"; last_ts=0\n\tf=$(ls -t "$sessions/$(printf \'%s\' "${wt#"$HOME"}" | sed \'s#/#-#g\')"/*.jsonl 2>/dev/null | head -1)\n\tif [ -n "$f" ]; then last_ts=$(stat -f \'%m\' "$f" 2>/dev/null || echo 0)\n\t\tlast=$(date -r "$last_ts" \'+%Y-%m-%d\' 2>/dev/null); fi\n',
+      '\t# Most recent omp session started in this worktree.\n\tlast="-"; last_ts=0\n\tf=$(ls -t "$sessions/$(printf \'%s\' "${wt#"$HOME"}" | sed \'s#/#-#g\')"/*.jsonl 2>/dev/null | head -1)\n\tif [ -n "$f" ]; then last_ts=$(stat "${stat_fmt[@]}" "$f" 2>/dev/null | awk \'{print $1}\')\n\t\tlast=$(fmt_day "${last_ts:-0}" 2>/dev/null); fi\n',
   },
 
   // Worktree and disk paths.

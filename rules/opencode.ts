@@ -50,12 +50,6 @@ const opencode: Rule[] = [
       "as the `watch` command of a `loop_arm` loop. Each time it exits short of `COMPLETE` at the ceiling, arm the loop again with the same list.",
   },
   {
-    id: "loop-orchestrate-frontier",
-    files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match: "(arm it via the loop skill, with a long heartbeat fallback)",
-    replace: "(arm it with `loop_arm` as a `watch` command with a long `fallback`)",
-  },
-  {
     id: "loop-guide-overnight",
     files: "docs/guide/07-overnight.md",
     match:
@@ -112,8 +106,8 @@ const opencode: Rule[] = [
   {
     id: "agent-interrogate-explore",
     files: "skills/interrogate/SKILL.md",
-    match: "Each reviewer gets `subagent_type: generalPurpose`, `readonly: true`, and `model`",
-    replace: 'Each reviewer gets `agent: "explore"` and `model`',
+    match: "Spawn each adversary as `generalPurpose`.",
+    replace: 'Spawn each adversary with `agent: "general"`, because it writes repros in its worktree.',
   },
   {
     id: "agent-why-mcp",
@@ -141,9 +135,9 @@ const opencode: Rule[] = [
     id: "agent-swarm-spawn",
     files: "skills/swarm/SKILL.md",
     match:
-      'with `subagent_type: generalPurpose`, `environment: "cloud"`, `run_in_background: true`, and the step 4 model, left unset for `auto` or `inherit-parent`. Use `environment: "local"` only when the worker needs access to something on the user\'s computer.',
+      'with `subagent_type: generalPurpose`, `environment: "cloud"`, `run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Use `environment: "local"` only when the worker needs access to something on the user\'s computer.',
     replace:
-      'with `agent: "general"`, `background: true`, and the step 4 model, left unset for `auto` or `inherit-parent`. Tell each worker that writes to create its own git worktree first.',
+      'with `agent: "general"`, `background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Tell each worker that writes to create its own git worktree first.',
   },
   {
     id: "agent-general",
@@ -153,8 +147,8 @@ const opencode: Rule[] = [
   {
     id: "agent-arena-judge",
     files: "skills/arena/SKILL.md",
-    match: "Spawn one readonly judge subagent on that model.",
-    replace: 'Spawn one judge subagent with `agent: "explore"` on that model.',
+    match: "Spawn one readonly judge subagent.",
+    replace: 'Spawn one judge subagent with `agent: "explore"`.',
   },
   {
     id: "agent-model-families",
@@ -164,9 +158,9 @@ const opencode: Rule[] = [
   {
     id: "agent-orchestrate-nesting",
     files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match: "(nesting works to depth 3, and a nested spawn has the full Task schema including `environment`)",
+    match: "Stop at three levels: you, sub-coordinators, and workers.",
     replace:
-      "(nesting works to depth 3 when `experimental.subagent_depth` is 3, as open-pstack's README sets it. A nested spawn uses the same `subagent` tool. The built-in `general` agent can't spawn subagents, so run sub-coordinators as `poteto-agent`)",
+      "Stop at three levels: you, sub-coordinators, and workers. That depth needs `experimental.subagent_depth` at 3, as open-pstack's README sets it. The built-in `general` agent can't spawn subagents, so run sub-coordinators as `poteto-agent`.",
   },
 
   // Cursor's Task tool: OpenCode's subagent tool.
@@ -187,8 +181,10 @@ const opencode: Rule[] = [
   {
     id: "task-defaults",
     files: "skills/poteto-mode/SKILL.md",
-    match: "`run_in_background: true`, agent mode (readonly strips MCP), file pointers",
-    replace: "`background: true`, file pointers",
+    match:
+      "`run_in_background: true` (a steer or resume of a running agent too, because a foreground call holds your turn while other reports wait), agent mode (readonly strips MCP), file pointers",
+    replace:
+      "`background: true` (a steer or resume of a running agent too, because a foreground call holds your turn while other reports wait), file pointers",
   },
   {
     id: "task-omit-model",
@@ -388,9 +384,9 @@ const opencode: Rule[] = [
     id: "transcripts-worktree-audit-lookup",
     files: "skills/poteto-mode/scripts/worktree-audit.sh",
     match:
-      '\t# Most recent chat whose transcript operated in this worktree. Match path\n\t# followed by "/" or a quote so glint-482 does not match glint-482-r37.\n\tlast="-"; last_ts=0\n\tif [ -d "$transcripts" ]; then\n\t\tf=$(rg -l -e "${wt}/" -e "${wt}\\"" "$transcripts" 2>/dev/null \\\n\t\t\t| xargs stat -f \'%m %N\' 2>/dev/null | sort -rn | head -1)\n\t\tif [ -n "$f" ]; then last_ts=$(echo "$f" | awk \'{print $1}\')\n\t\t\tlast=$(date -r "$last_ts" \'+%Y-%m-%d\' 2>/dev/null); fi\n\tfi\n',
+      '\t# Most recent chat whose transcript operated in this worktree. Match path\n\t# followed by "/" or a quote so glint-482 does not match glint-482-r37.\n\tlast="-"; last_ts=0\n\tif [ -d "$transcripts" ]; then\n\t\tf=$(rg -l -e "${wt}/" -e "${wt}\\"" "$transcripts" 2>/dev/null \\\n\t\t\t| xargs stat "${stat_fmt[@]}" 2>/dev/null | sort -rn | head -1)\n\t\tif [ -n "$f" ]; then last_ts=$(echo "$f" | awk \'{print $1}\')\n\t\t\tlast=$(fmt_day "$last_ts" 2>/dev/null); fi\n\tfi\n',
     replace:
-      '\t# Most recent OpenCode session whose directory is this worktree.\n\tlast="-"; last_ts=0\n\tupdated=$(opencode api get "/api/session?directory=${wt}&limit=1&order=desc" 2>/dev/null \\\n\t\t| jq -r \'.data[0].time.updated // empty\' 2>/dev/null)\n\tif [ -n "$updated" ]; then last_ts=$(( updated / 1000 ))\n\t\tlast=$(date -r "$last_ts" \'+%Y-%m-%d\' 2>/dev/null); fi\n',
+      '\t# Most recent OpenCode session whose directory is this worktree.\n\tlast="-"; last_ts=0\n\tupdated=$(opencode api get "/api/session?directory=${wt}&limit=1&order=desc" 2>/dev/null \\\n\t\t| jq -r \'.data[0].time.updated // empty\' 2>/dev/null)\n\tif [ -n "$updated" ]; then last_ts=$(( updated / 1000 ))\n\t\tlast=$(fmt_day "$last_ts" 2>/dev/null); fi\n',
   },
   {
     id: "transcripts-worktree-cleanup-scan",

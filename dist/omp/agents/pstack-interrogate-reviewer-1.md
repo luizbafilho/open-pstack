@@ -4,11 +4,6 @@ description: "pstack's `interrogate reviewers` role. Model: modelRoles.pstack-in
 model:
   - "@pstack-interrogate-reviewer-1"
   - anthropic/claude-opus-5-5:xhigh
-tools:
-  - read
-  - grep
-  - glob
-  - bash
 ---
 # pstack worker
 
