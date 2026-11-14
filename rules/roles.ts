@@ -35,7 +35,7 @@ const roles: Role[] = [
   { id: "arena-judge", line: "arena cross-judge pool", base: "worker", readonly: true, defaults: panel },
   { id: "swarm-worker", line: "swarm workers", base: "worker", readonly: false, defaults: [grok] },
   { id: "architect-runner", line: "architect runners", base: "worker", readonly: false, defaults: panel },
-  { id: "interrogate-reviewer", line: "interrogate reviewers", base: "worker", readonly: true, defaults: panel },
+  { id: "interrogate-reviewer", line: "interrogate reviewers", base: "worker", readonly: false, defaults: panel },
 ]
 
 export default roles

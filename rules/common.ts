@@ -64,8 +64,8 @@ const common: Rule[] = [
     id: "team-kit-orchestrate-local-list",
     files: "skills/poteto-mode/playbooks/orchestrate.md",
     match:
-      'Always `environment: "cloud"` unless the task needs this machine: `control-ui` or `control-cli` runtime verification (from `cursor-team-kit`). Reading local transcripts under `agent-transcripts/`. Simulators and local IDE state. Auth that exists only here. Cloud agents cannot read the local store, so their briefs inline what they need or point at repo paths.',
-    replace: "A subagent in its own worktree. Its brief inlines what it needs or points at repo paths.",
+      'Run workers on a new cloud VM (`environment: "cloud"`) unless the work needs this machine: a `control-ui` or `control-cli` runtime check (from `cursor-team-kit`), local transcripts, a simulator, or auth that exists only here.',
+    replace: "Run each worker that writes in its own git worktree.",
   },
   {
     id: "team-kit-not-in-pstack",
@@ -212,26 +212,6 @@ const common: Rule[] = [
     files: "skills/swarm/SKILL.md",
     match: "When a worker must start from a non-default pushed branch, pass `cloud_base_branch`.",
     replace: "When a worker must start from a non-default pushed branch, tell it to create its worktree from that branch.",
-  },
-  {
-    id: "cloud-orchestrate-brief",
-    files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match: "its spawn budget with the cloud default and the local exception list,",
-    replace: "its spawn budget,",
-  },
-  {
-    id: "cloud-orchestrate-liveness",
-    files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match: "the cloud agent's status in the Cursor dashboard.",
-    replace: "the subagent's session status.",
-  },
-  {
-    id: "cloud-orchestrate-restart",
-    files: "skills/poteto-mode/playbooks/orchestrate.md",
-    match:
-      "After a Cursor restart: local agents are dead, cloud work is not. Re-read the standing orders and `units.tsv`, recompute the frontier, reattach cloud work by PR and branch rather than agent id,",
-    replace:
-      "After a restart, running subagents are dead and their pushed work is not. Re-read the standing orders and `units.tsv`, recompute the frontier, reattach pushed work by PR and branch rather than agent id,",
   },
   {
     id: "cloud-live-lane",

@@ -4,11 +4,6 @@ description: "pstack's `interrogate reviewers` role. Model: modelRoles.pstack-in
 model:
   - "@pstack-interrogate-reviewer-2"
   - opencode-zen/grok-4.7:xhigh
-tools:
-  - read
-  - grep
-  - glob
-  - bash
 ---
 # pstack worker
 

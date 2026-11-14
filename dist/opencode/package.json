@@ -1,6 +1,6 @@
 {
   "name": "open-pstack-opencode",
-  "version": "0.15.28",
+  "version": "0.15.36",
   "type": "module",
   "main": "index.ts",
   "dependencies": {
@@ -8,6 +8,6 @@
     "yaml": "2.9.1"
   },
   "pstack": {
-    "upstreamSha": "d457567332aa6989e753ea289f30ea2bfbc80bc0"
+    "upstreamSha": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c"
   }
 }
